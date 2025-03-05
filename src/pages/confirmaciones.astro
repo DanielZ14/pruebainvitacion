@@ -135,7 +135,8 @@ const asistenciaData = {
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import Chart from 'chart.js/auto';
     const ctxAsistencia = document.getElementById('asistenciaChart').getContext('2d');
     new Chart(ctxAsistencia, {
       type: 'pie', //  o 'bar', 'doughnut', etc.
