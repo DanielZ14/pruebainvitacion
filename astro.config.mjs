@@ -1,19 +1,12 @@
-// astro.config.mjs
+
+
 import { defineConfig } from 'astro/config';
-import { fileURLToPath } from 'node:url'; // Importante: Asegúrate de tener esta importación
-import vercel from '@astrojs/vercel/serverless'; // Import the Vercel adapter
+import vercel from '@astrojs/vercel/serverless'; // Import the Vercel adapter (serverless)
 import tailwindcss from '@tailwindcss/vite';
 
-// astro.config.mjs
+// https://astro.build/config
 export default defineConfig({
-  vite: {
-    assetsInclude: ['**/*.csv'],
-    plugins: [tailwindcss()]
-    output: 'server', //  Enable server-side rendering
-  adapter: vercel(), // Use the Vercel adapter
-  }
+  integrations: [tailwind()], // Tailwind integration
+  output: 'server', // Enable server-side rendering (SSR) - VERY IMPORTANT
+  adapter: vercel(),  // Use the Vercel serverless adapter - ALSO VERY IMPORTANT
 });
-
-import { defineConfig } from 'astro/config';
-
-
