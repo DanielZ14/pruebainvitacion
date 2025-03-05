@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleButton.textContent = qrContainer.classList.contains('hidden')
                 ? 'Mostrar pases'
                 : 'Ocultar pases';
-            toggleButton.classList.toggle('bg-darkgold'); // Assuming you have this class
+            toggleButton.classList.toggle('bg-darkgold'); // Assuming you want this
         });
     }
 
@@ -22,15 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (modal && modalImg) {
             modalImg.src = qrSrc;
-            modal.style.display = 'flex'; // Use style.display, not classList
+            modal.style.display = 'flex'; // Use style.display for initial visibility
             document.body.classList.add('overflow-hidden');
         }
     };
 
-  const closeModal = () => {
-      const modal = document.getElementById('qrModal');
-        if(modal){
-            modal.style.display = 'none';
+    const closeModal = () => {
+        const modal = document.getElementById('qrModal');
+        if (modal) {
+            modal.style.display = 'none'; // Use style.display
             document.body.classList.remove('overflow-hidden');
         }
     };
@@ -43,19 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    // Event listener for close button. Check for null.
+
+
+    // Event listener for close button
     const closeModalButton = document.getElementById('closeModal');
     if (closeModalButton) {
         closeModalButton.addEventListener('click', closeModal);
     }
 
-    // Event listener for modal background click (to close). Check for null
+    // Event listener for modal background click (to close)
     const qrModalElement = document.getElementById('qrModal');
     if (qrModalElement) {
-            qrModalElement.addEventListener('click', (e) => {
+        qrModalElement.addEventListener('click', (e) => {
             if (e.target === qrModalElement) {
-              closeModal();
+                closeModal();
             }
-          });
+        });
     }
 });

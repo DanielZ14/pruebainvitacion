@@ -1,16 +1,17 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg"  />
-        <meta name="generator" content={Astro.generator} />
-        <link rel="stylesheet" href="/styles/global.css"> {/* Correct way to link CSS */}
-    
-    </head>
-    <body>
-        <slot />
-    </body>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{Astro.props.title}</title> {/* Use a prop for the title */}
+    <link rel="stylesheet" href="/styles/global.css"> {/* Correct CSS link */}
+</head>
+<body>
+   
+    <slot /> {/* Where page content goes */}
+</body>
 </html>
 
 <style>

@@ -6,7 +6,7 @@ import { db } from '../../lib/firebase';
 import { doc, getDoc } from "firebase/firestore";
 import ConfirmacionAsistencia from '../../components/ConfirmacionAsistencia.astro';
 import DescargaPases from '../../components/DescargaPases.astro';
-import { getInvitadosData } from '../../lib/utils';
+// import { getInvitadosData } from '../../lib/utils'; // <-- ¡ELIMINA ESTO!
 import HeroSection from "../../components/HeroSection.astro";
 import TextSection from "../../components/TextSection.astro";
 import Layout from '../../layouts/Layout.astro';
@@ -19,34 +19,60 @@ import GiftSection from '../../components/GiftSection.astro';
 import LibroDeDeseos from '../../components/LibroDeDeseos.astro';
 import MostrarPases from "../../components/MostrarPases.astro";
 
+
 const { id } = Astro.params;
 
 interface Invitado {
-    id: string;
+    id: string; //Aunque ahora lo obtenemos implicitamente, es bueno mantener la interfaz
     nombre: string;
     pases: string;
     mesa: string;
+    // Agrega otros campos de tu colección de invitados si los necesitas.
 }
 
-let invitado: Invitado = { id: '', nombre: '', pases: '', mesa: '' };
-let qrCodes: string[] = [];
+// Estado de carga y manejo de errores
+let invitado: Invitado | null = null; // Inicializa como null
+let loading = true;
+let error = false;
+
 
 if (id) {
     try {
-        const invitados = await getInvitadosData();
-        const foundInvitado = invitados.find(inv => inv.id.toString() === id);
-        invitado = foundInvitado ? foundInvitado : { id: '', nombre: '', pases: '', mesa: '' };
+        // --- Obtener datos de Firestore, NO del CSV ---
+        const docRef = doc(db, "invitados", id); // Usa "invitados", no "confirmaciones"
+        const docSnap = await getDoc(docRef);
 
-      
-    } catch (error) {
-        console.error("Error loading guest data:", error);
-        invitado = { id: '', nombre: '', pases: '', mesa: '' };
+        if (docSnap.exists()) {
+            // Extrae los datos y crea el objeto invitado
+            const data = docSnap.data();
+             invitado = {
+                id: docSnap.id, // Puedes usar docSnap.id directamente
+                nombre: data.nombre,
+                pases: data.pases,
+                mesa: data.mesa,
+                // ...  agrega otros campos aquí ...
+            };
+
+        } else {
+            // Manejo de caso en que el invitado no existe
+            console.log("No such document!");
+             error = true; // Establece el estado de error
+
+        }
+    } catch (err) {
+        console.error("Error loading guest data:", err);
+        error = true; // Establece el estado de error en caso de error de red, etc.
+
+    } finally {
+        loading = false; // Finaliza la carga, independientemente del resultado
     }
 }
+
 
 let yaConfirmo = false;
 let asistenciaPrevia = null;
 
+// La parte de confirmaciones queda igual (ya usa Firestore).
 if (id) {
     try {
         const docRef = doc(db, "confirmaciones", id);
@@ -63,51 +89,55 @@ if (id) {
 ---
 
 <Layout>
-  <SplashScreen>
-    <html lang="es">
+    <SplashScreen>
+        <html lang="es">
         <head>
             {invitado && invitado.nombre && <title>Invitación de {invitado.nombre}</title>}
             <meta charset="UTF-8" />
         </head>
         <body>
             <Navbar />
-            <HeroSection invitado={invitado} />
-            <TextSection />
-            <CountdownSection />
-            <ParentsSection />
-            <ItinerarioCarousel />
-            <VestimentaSection />
-            <GiftSection />
-            <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
-                <h1 class="text-4xl font-semibold mb-4">¡Ya eres parte de nuestra boda!</h1>
-                {invitado && invitado.nombre && (
-                    <div class="mb-4">
-                        <p>Nombre: {invitado.nombre}</p>
-                        <p>Pases: {invitado.pases}</p>
-                        
+            {loading ? (
+                <p>Cargando...</p>
+            ) : error ? (
+                <p>Invitado no encontrado.</p>
+            ) : (
+                <>
+                    <HeroSection invitado={invitado} />
+                    <TextSection />
+                    <CountdownSection />
+                    <ParentsSection />
+                    <ItinerarioCarousel />
+                    <VestimentaSection />
+                    <GiftSection />
+                     <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
+                        <h1 class="text-4xl font-semibold mb-4">¡Ya eres parte de nuestra boda!</h1>
+                        {invitado && (
+                            <div class="mb-4">
+                                <p>Nombre: {invitado.nombre}</p>
+                                <p>Pases: {invitado.pases}</p>
+                            </div>
+                        )}
+                         <div class="font-semibold">
+                            {yaConfirmo ? (
+                                <p>
+                                    Ya confirmaste tu asistencia. {asistenciaPrevia ? '¡Nos vemos en la boda!' : '¡Lamentamos que no puedas asistir!'}
+                                </p>
+                            ) : (
+                                invitado && id && <ConfirmacionAsistencia
+                                    idInvitado={id}
+                                    nombreInvitado={invitado.nombre}
+                                    pasesDisponibles={parseInt(invitado.pases, 10)}
+                                />
+                            )}
+                        </div>
                     </div>
-                )}
-                <div class="font-semibold">
-                    {yaConfirmo ? (
-                        <p>
-                            Ya confirmaste tu asistencia. {asistenciaPrevia ? '¡Nos vemos en la boda!' : '¡Lamentamos que no puedas asistir!'}
-                        </p>
-                    ) : (
-                        invitado && invitado.nombre && id && <ConfirmacionAsistencia 
-                            idInvitado={id as string} 
-                            nombreInvitado={invitado.nombre} 
-                            pasesDisponibles={parseInt(invitado.pases, 10)} 
-                        />
-                    )}
-                
-              
-                </div>
-            <div class= "max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12" >
-          
-            <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado.pases, 10)} />
-            </div>
-         
+                    <div class= "max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12" >
+                        <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado.pases, 10)} />
+                    </div>
+                </>
+            )}
         </body>
     </html>
-  </SplashScreen>
+</SplashScreen>
 </Layout>
