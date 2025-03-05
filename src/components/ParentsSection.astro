@@ -1,0 +1,66 @@
+
+<section class="py-20 px-4 lg:px-0 bg-white">
+    <div class="container mx-auto max-w-4xl">
+      <div class="text-center mb-12" data-aos="fade-up">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4 font-cursive">
+          Con la bendición de nuestros padres
+        </h2>
+        <div class="h-px w-32 bg-pink-300 mx-auto"></div>
+      </div>
+  
+      <div class="grid md:grid-cols-2 gap-12 lg:gap-24" data-aos="fade-in">
+        <!-- Columna Novio -->
+        <div class="text-center space-y-4">
+          <div class="space-y-2 text-gray-600">
+            <p class="text-lg">Héctor Javier Castillo Ivón</p>
+            <p class="text-lg">Victoria Picazo Moreno</p>
+          </div>
+        </div>
+  
+        <!-- Columna Novia -->
+        <div class="text-center space-y-4">
+          <div class="space-y-2 text-gray-600">
+            <p class="text-lg">Rafael Chávez Hernández</p>
+            <p class="text-lg">Pavy Rodriguez Serrato</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <style>
+    [data-aos] {
+      opacity: 20;
+      transition: all 0.8s ease;
+    }
+  
+    [data-aos="fade-up"] {
+      transform: translateY(20px);
+    }
+  
+    [data-aos].aos-animate {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  
+    .font-cursive {
+      font-family: 'Great Vibes', cursive;
+    }
+  </style>
+  
+  <script is:inline>
+    // Animación al hacer scroll
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting) {
+            entry.target.classList.add('aos-animate');
+          }
+        });
+      }, { threshold: 0.1 });
+  
+      document.querySelectorAll('[data-aos]').forEach(element => {
+        observer.observe(element);
+      });
+    });
+  </script>

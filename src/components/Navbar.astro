@@ -1,0 +1,158 @@
+
+<nav class="fixed w-full top-0 z-50  backdrop-blur-md shadow-sm">
+  <div class="container mx-auto px-4">
+    <div class="flex justify-between items-center h-16">
+      {/* Logo */}
+      <a href="#inicio" class="flex items-center">
+        <img 
+          src="/Logo.png" 
+          alt="Logo Silvia y Christian" 
+          class="h-12 w-auto"
+        />
+      </a>
+
+      {/* Menú Desktop */}
+      <div class="hidden lg:flex space-x-8 text-white">     
+        <a href="#ubicacion" class="nav-link">Ubicaciones</a>
+        <a href="#regalos" class="nav-link">Mesa de regalos</a>
+        <a href="#vestimenta" class="nav-link">Código de vestimenta</a>
+        <a href="#contacto" class="nav-link">Contacto</a>
+      </div>
+
+      {/* Botón Hamburguesa */}
+      <button 
+        id="menuBtn"
+        class="lg:hidden p-2 text-white hover:text-pink-400"
+        aria-label="Abrir menú"
+      >
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-16 6h16"/>
+        </svg>
+      </button>
+    </div>
+
+     {/* Menú Mobile - Versión pantalla completa */}
+     <div 
+     id="mobileMenu" 
+     class="lg:hidden hidden fixed inset-0 h-screen bg-white/95 backdrop-blur-xl z-40 transition-all duration-300"
+   >
+     <div class="h-full flex flex-col justify-center items-center space-y-8 text-center">
+       <a href="#ubicacion" class="nav-link-mobile text-2xl">Ubicaciones</a>
+       <a href="#regalos" class="nav-link-mobile text-2xl">Mesa de regalos</a>
+       <a href="#vestimenta" class="nav-link-mobile text-2xl">Código de vestimenta</a>
+       <a href="#contacto" class="nav-link-mobile text-2xl">Contacto</a>
+       
+       {/* Botón para cerrar */}
+       <button 
+         onclick="document.getElementById('mobileMenu').classList.add('hidden')"
+         class="absolute top-4 right-4 p-2 text-gray-600 hover:text-pink-500"
+       >
+         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+         </svg>
+       </button>
+     </div>
+   </div>
+ </div>
+</nav>
+
+<style>
+    /* Animación circular */
+    @keyframes circle-in {
+    from {
+      clip-path: circle(0% at 50% 50%);
+      opacity: 0;
+    }
+    to {
+      clip-path: circle(150% at 50% 50%);
+      opacity: 1;
+    }
+  }
+
+  @keyframes circle-out {
+    from {
+      clip-path: circle(150% at 50% 50%);
+      opacity: 1;
+    }
+    to {
+      clip-path: circle(0% at 50% 50%);
+      opacity: 0;
+    }
+  }
+
+  .circle-in {
+    animation: circle-in 0.6s ease-out forwards;
+  }
+
+  .circle-out {
+    animation: circle-out .6s ease-in forwards;
+  }
+
+  .nav-link-mobile {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  /* Animación items */
+  #mobileMenu:not(.hidden) .nav-link-mobile {
+    animation: item-appear 0.4s ease-out forwards;
+    animation-delay: calc(var(--index) * 0.1s);
+  }
+
+  @keyframes item-appear {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+</style>
+
+<script is:inline>
+  function showMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenu.classList.remove('hidden', 'circle-out');
+    mobileMenu.classList.add('circle-in');
+    document.body.style.overflow = 'hidden';
+
+    // Animación items
+    document.querySelectorAll('.nav-link-mobile').forEach((link, index) => {
+      link.style.setProperty('--index', index);
+    });
+  }
+
+  function hideMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenu.classList.remove('circle-in');
+    mobileMenu.classList.add('circle-out');
+
+    setTimeout(() => {
+      mobileMenu.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }, 1000); // Duración de la animación de salida
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuBtn = document.getElementById('menuBtn');
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showMenu();
+    });
+
+    // Cerrar al hacer click fuera
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('mobileMenu').contains(e.target)) {
+        hideMenu();
+      }
+    });
+
+    // **NUEVO CÓDIGO: Cerrar menú al hacer clic en un enlace del menú móvil**
+    const mobileLinks = document.querySelectorAll('#mobileMenu .nav-link-mobile');
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        hideMenu(); // Llama a hideMenu() al hacer clic en un enlace
+      });
+    });
+  });
+</script>

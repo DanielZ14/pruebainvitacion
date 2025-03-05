@@ -1,0 +1,58 @@
+---
+// src/components/MostrarPases.astro
+interface Props {
+  idInvitado: string;
+  pasesDisponibles: number;
+}
+
+const { idInvitado, pasesDisponibles } = Astro.props;
+
+---
+
+<div id="pasesContainer" class="mt-8">  {/* Added mt-8 for spacing */}
+  <h2 class="text-2xl font-bold mb-4">Obtén tus pases</h2> {/* Added Title */}
+  <button
+    id="togglePasesButton"
+    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+  >
+    Mostrar Pases
+  </button>
+
+  <div id="qrCodeContainer" class="mt-4 hidden">
+    <h3 class="text-xl font-bold mb-4">Tus Pases:</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {
+        Array.from({ length: pasesDisponibles }).map((_, i) => (
+          <div id={`pase-${i}`}>
+            <img
+              src={`/qr/${idInvitado}/${i + 1}.png`}
+              alt={`Pase ${i + 1}`}
+              class="w-full h-auto border rounded-md"
+            />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('togglePasesButton');
+    const qrCodeContainer = document.getElementById('qrCodeContainer');
+
+    if (toggleButton && qrCodeContainer) { // Null check
+      toggleButton.addEventListener('click', () => {
+        qrCodeContainer.classList.toggle('hidden');
+        // Change button text based on visibility
+        if (qrCodeContainer.classList.contains('hidden')) {
+          toggleButton.textContent = 'Mostrar Pases';
+        } else {
+          toggleButton.textContent = 'Ocultar Pases';
+        }
+      });
+    } else {
+      console.error('Could not find toggle button or QR code container.');
+    }
+  });
+</script>

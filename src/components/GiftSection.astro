@@ -1,0 +1,116 @@
+
+<section class="relative min-h-screen flex items-center justify-center py-16 px-4">
+    <!-- Fondo con opacidad -->
+    <div 
+      class="absolute inset-0 bg-cover bg-center z-0"
+      style="background-image: url('/Giftbk.avif')"
+    ></div>
+    <div class="absolute inset-0 bg-black/10 z-10"></div>
+  
+    <!-- Contenido -->
+    <div class="relative z-20 max-w-2xl mx-auto text-center">
+
+        <h1 class="text-4xl font-bold text-gray-600 mb-4">Mesa de Regalos</h1>
+      <!-- Logo empresa -->
+      <div class="mb-12 animate-bounce-slow">
+        <img 
+          src="/liver.png" 
+          alt="Mesa de regalos" 
+          class="mx-auto w-48 h-48 object-contain"
+        />
+      </div>
+  
+      <!-- Botón tienda -->
+      <a 
+        href="https://mesaderegalos.liverpool.com.mx/milistaderegalos/51618067" 
+        target="_blank"
+        class="inline-block bg-pink-600 text-white px-8 py-4 rounded-full text-lg hover:bg-pink-700 transition-colors mb-12"
+      >
+        🎁 Ir a Mesa de Regalos
+      </a>
+  
+      <!-- Sección Transferencia -->
+      <div class="bg-white/90 backdrop-blur-sm rounded-xl p-8 shadow-lg">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Transferencia Bancaria</h3>
+        <p class="text-gray-600 mb-6">
+          No es necesario estar cerca, para hacer sentir el amor y el cariño.<br>
+          Si así lo prefieres puedes realizar transferencia
+        </p>
+  
+        <div class="h-px bg-gray-200 w-3/4 mx-auto my-6"></div>
+  
+        <div class="space-y-4">
+          <h4 class="text-xl font-semibold text-gray-800">Titular de la cuenta:</h4>
+          <p class="text-gray-700 font-medium">Silvia Guadalupe Castillo Picazo</p>
+          
+          <div class="flex items-center justify-center gap-2">
+            <span id="accountNumber" class="text-gray-800 font-mono">4152 3142 2340 9155</span>
+            <button 
+              onclick="copyToClipboard()"
+              class="text-pink-600 hover:text-pink-700 transition-colors tooltip"
+              data-tooltip="Copiado!"
+            >
+              📋
+            </button>
+          </div>
+        </div>
+  
+        <p class="text-gray-500 mt-8">¡Gracias por hacer parte de nuestra historia!</p>
+      </div>
+    </div>
+  </section>
+  
+  <style>
+    .animate-bounce-slow {
+      animation: bounce 4s ease-in-out infinite;
+    }
+  
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+  
+    .tooltip {
+      position: relative;
+    }
+  
+    .tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  
+    .tooltip:hover::after {
+      opacity: 1;
+    }
+    
+  </style>
+  
+  <script is:inline>
+  function copyToClipboard() {
+    const account = document.getElementById('accountNumber').innerText;
+    navigator.clipboard.writeText(account.replace(/ /g, ''))
+      .then(() => {
+        const tooltip = document.querySelector('.tooltip');
+        tooltip.setAttribute('data-tooltip', '¡Copiado!');
+        setTimeout(() => {
+          tooltip.setAttribute('data-tooltip', 'Copiar');
+        }, 2000);
+      })
+      .catch(err => {
+        console.error('Error al copiar:', err);
+        alert('No se pudo copiar el número. Por favor cópialo manualmente.');
+      });
+  }
+  </script>

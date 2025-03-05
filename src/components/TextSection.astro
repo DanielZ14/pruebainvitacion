@@ -1,0 +1,75 @@
+
+<section class="py-20 px-4 lg:px-0 bg-white">
+    <div class="container mx-auto max-w-3xl">
+      <div class="text-center mb-16" data-aos="fade-up">
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6 animate-fade-in-up">
+          El día más importante<br>de nuestras vidas ha llegado
+        </h2>
+        <div class="h-1 w-24 bg-pink-300 mx-auto mb-8" data-aos="zoom-in"></div>
+      </div>
+  
+      <div class="space-y-8 text-lg text-gray-600">
+        <p class="data-aos" data-aos="fade-right" data-aos-delay="200">Después de años de compartir sueños y risas, finalmente unimos nuestras vidas en un momento que atesoraremos por siempre.</p>
+      </div>
+    </div>
+  </section>
+  
+  <style>
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  
+    [data-aos] {
+      opacity: 0;
+      transition: all 0.8s ease;
+    }
+  
+    [data-aos="fade-up"] {
+      transform: translateY(30px);
+    }
+  
+    [data-aos="fade-right"] {
+      transform: translateX(-30px);
+    }
+  
+    [data-aos="fade-left"] {
+      transform: translateX(30px);
+    }
+  
+    [data-aos="zoom-in"] {
+      transform: scale(0.8);
+    }
+  
+    [data-aos].aos-animate {
+      opacity: 1;
+      transform: translate(0) scale(1);
+    }
+  
+    .animate-fade-in-up {
+      animation: fade-in-up 1s ease-out;
+    }
+  </style>
+  
+  <script is:inline>
+  // Observador de scroll para animaciones
+  document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting) {
+          entry.target.classList.add('aos-animate');
+        }
+      });
+    }, { threshold: 0.1 });
+  
+    document.querySelectorAll('[data-aos]').forEach(element => {
+      observer.observe(element);
+    });
+  });
+  </script>

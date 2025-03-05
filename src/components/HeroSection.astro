@@ -1,0 +1,48 @@
+---
+// src/components/Hero.astro
+const { invitado } = Astro.props;
+---
+
+<section class="relative min-h-[100vh] flex items-center justify-center">
+    <div class="absolute inset-0 z-0">
+      <img 
+        src="/hero.png" 
+        alt="Fondo hero" 
+        class="w-full h-full object-cover object-center"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-black/40"></div>
+    </div>
+  
+    <div class="relative z-10 text-center text-white space-y-6 px-4">
+      <h1 class="text-5xl md:text-7xl font-bold font-cursive tracking-wide animate-fade-up">
+        Silvia & Christian
+      </h1>
+      <p class="text-xl md:text-2xl font-light italic animate-fade-up animate-delay-200">
+        Te invitamos a nuestra boda:
+      </p>
+      
+      {invitado && (
+        <div class="animate-fade-up animate-delay-400">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-2">
+             <span class="text-gold">{invitado.nombre}</span>
+          </h2>
+        </div>
+      )}
+    </div>
+</section>
+
+<style>
+    /* Tus estilos existentes */
+    .font-cursive { font-family: 'Great Vibes', cursive; }
+    
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-up { animation: fade-up 1s ease-out forwards; }
+    .animate-delay-200 { animation-delay: 200ms; }
+    .animate-delay-400 { animation-delay: 400ms; }
+    .text-gold { color: #D4AF37; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
+</style>

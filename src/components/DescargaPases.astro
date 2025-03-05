@@ -1,0 +1,166 @@
+---
+// src/components/DescargaPases.astro
+interface Props {
+  invitado: {
+    id: string;
+    nombre: string;
+  };
+  qrCodes: string[];
+}
+
+const { invitado, qrCodes } = Astro.props;
+---
+
+<section class="max-w-4xl mx-auto py-12 px-4">
+    <section class="max-w-4xl mx-auto py-12 px-4">
+        <div class="text-center mb-8">
+          <h2 class="text-4xl font-cursive text-gold mb-4 animate-fade-up">
+            Obten tus pases
+          </h2>
+          <p class="text-xl text-gray-600 mb-6">
+            Tienes {qrCodes.length} pases disponibles
+          </p>
+          
+          <button 
+            id="togglePases"
+            class="bg-gold bg-amber-400 text-white px-8 py-3 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl"
+          >
+            Mostrar pases
+          </button>
+        </div>
+      
+        <div 
+          id="qrContainer" 
+          class="hidden grid-cols-1 md:grid-cols-3 gap-6 transition-opacity duration-300"
+        >
+          {qrCodes.map((qrFile, index) => (
+            <div class="qr-card transform hover:scale-105 transition-transform">
+              <img 
+                src={`/qr/${invitado.id}/${qrFile}`} 
+                alt={`QR Pase ${index + 1}`}
+                class="w-full h-auto rounded-lg shadow-md"
+                loading="lazy"
+              />
+              <p class="text-center mt-3 text-gray-700 font-medium">
+                Pase {index + 1}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+<!-- Modal para QR grande -->
+<div id="qrModal" style="display: none;" class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-2xl w-full p-6 relative">
+      <button 
+        id="closeModal"
+        class="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
+      >
+        ×
+      </button>
+      <img 
+        id="modalImage"
+        class="w-full h-auto rounded-lg"
+        alt="QR grande"
+      />
+    </div>
+  </div>
+  
+  <script>
+    // Mostrar/ocultar pases
+    const toggleButton = document.getElementById('togglePases');
+    const qrContainer = document.getElementById('qrContainer');
+    
+    if(toggleButton && qrContainer) {
+      toggleButton.addEventListener('click', () => {
+        qrContainer.classList.toggle('hidden');
+        qrContainer.classList.toggle('grid');
+        toggleButton.textContent = qrContainer.classList.contains('hidden') 
+          ? 'Mostrar pases' 
+          : 'Ocultar pases';
+        toggleButton.classList.toggle('bg-darkgold');
+      });
+    }
+  
+    // Modal para QR grande
+    const openModal = (qrSrc: string) => {
+      const modal = document.getElementById('qrModal');
+      const modalImg = document.getElementById('modalImage');
+      
+      if(modal && modalImg) {
+        (modalImg as HTMLImageElement).src = qrSrc;
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
+    };
+  
+    const closeModal = () => {
+      const modal = document.getElementById('qrModal');
+      if(modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+    };
+  
+    // Event listeners
+    document.querySelectorAll('.qr-card img').forEach(img => {
+      img.addEventListener('click', () => openModal((img as HTMLImageElement).src));
+    });
+  
+    document.getElementById('closeModal')?.addEventListener('click', closeModal);
+    document.getElementById('qrModal')?.addEventListener('click', (e) => {
+      if(e.target === document.getElementById('qrModal')) {
+        closeModal();
+      }
+    });
+  
+    // Limpiar eventos al desmontar
+    window.addEventListener('beforeunload', () => {
+      document.querySelectorAll('.qr-card img').forEach(img => {
+        img.removeEventListener('click', () => openModal((img as HTMLImageElement).src));
+      });
+    });
+  </script>
+  
+  <style>
+    /* Animaciones para el modal */
+    #qrModal {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    #qrModal.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+  
+    #qrModal img {
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+    }
+  
+    #qrModal.show img {
+      transform: scale(1);
+    }
+  
+    /* Mejoras de estilo para el modal */
+    #qrModal div {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+  
+    #qrModal button {
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+  
+    @media (max-width: 640px) {
+      #qrModal div {
+        width: 95%;
+        padding: 1rem;
+      }
+      
+      #qrModal img {
+        max-height: 70vh;
+      }
+    }
+  </style>

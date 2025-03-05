@@ -1,0 +1,42 @@
+---
+// components/SplashScreen.astro
+import "../styles/splash.css"
+---
+
+<main id="mainContent" class="hidden">
+  <slot />
+</main>
+
+<div 
+  id="splashScreen"
+  class="fixed inset-0 z-[1000] bg-pink-100 flex justify-center items-center cursor-pointer">
+  <img 
+    src= "/Logo.png"
+    alt="Logo"
+    width="200"  
+    height="200"
+    class="max-w-[50vw] animate-pulse pointer-events-none" 
+    data-tooltip="Copiado!"
+  />
+</div>
+
+<script is:inline>
+  // El mismo script anterior manteniendo la funcionalidad
+  document.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('splashScreen');
+    const main = document.getElementById('mainContent');
+    
+    const hideSplash = () => {
+      splash.style.animation = 'fadeOut 0.5s ease-out forwards';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        main.classList.remove('hidden');
+      }, 650);
+    };
+
+    if(splash) {
+      splash.addEventListener('click', hideSplash);
+      setTimeout(hideSplash, 9000);
+    }
+  });
+</script>

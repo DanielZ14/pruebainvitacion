@@ -1,106 +1,113 @@
 ---
 // src/pages/invitado/[id].astro
-export const prerender = false; // Desactivar prerenderizado
-
-import { db } from "../../lib/firebase.js"; // Ajusta la ruta si es necesario
-import { doc, getDoc, setDoc } from "firebase/firestore";
+export const prerender = false;
+import SplashScreen from '../../components/SplashScreen.astro';
+import { db } from '../../lib/firebase';
+import { doc, getDoc } from "firebase/firestore";
 import ConfirmacionAsistencia from '../../components/ConfirmacionAsistencia.astro';
+import DescargaPases from '../../components/DescargaPases.astro';
+import { getInvitadosData } from '../../lib/utils';
+import HeroSection from "../../components/HeroSection.astro";
+import TextSection from "../../components/TextSection.astro";
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import CountdownSection from '../../components/CountdownSection.astro';
+import ItinerarioCarousel from '../../components/ItinerarioCarousel.astro';
+import VestimentaSection from '../../components/VestimentaSection.astro';
+import ParentsSection from '../../components/ParentsSection.astro';
+import GiftSection from '../../components/GiftSection.astro';
+import LibroDeDeseos from '../../components/LibroDeDeseos.astro';
+import MostrarPases from "../../components/MostrarPases.astro";
 
 const { id } = Astro.params;
 
-let invitado = {};
+interface Invitado {
+    id: string;
+    nombre: string;
+    pases: string;
+    mesa: string;
+}
+
+let invitado: Invitado = { id: '', nombre: '', pases: '', mesa: '' };
+let qrCodes: string[] = [];
+
+if (id) {
+    try {
+        const invitados = await getInvitadosData();
+        const foundInvitado = invitados.find(inv => inv.id.toString() === id);
+        invitado = foundInvitado ? foundInvitado : { id: '', nombre: '', pases: '', mesa: '' };
+
+      
+    } catch (error) {
+        console.error("Error loading guest data:", error);
+        invitado = { id: '', nombre: '', pases: '', mesa: '' };
+    }
+}
+
 let yaConfirmo = false;
 let asistenciaPrevia = null;
 
-// Cargar datos del invitado
 if (id) {
-  try {
-    // DELAY the fetch call
-    setTimeout(async () => { // Wrap in setTimeout
-      const response = await fetch('/data/invitados.json');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const invitados = await response.json();
-      invitado = invitados.find(inv => inv.id.toString() === id) || {};
-      console.log("Invitado encontrado:", invitado); // Keep this log
-    }, 200); // Delay for 200 milliseconds (adjust as needed)
+    try {
+        const docRef = doc(db, "confirmaciones", id);
+        const docSnap = await getDoc(docRef);
 
-  } catch (error) {
-    console.error("Error loading guest data:", error);
-    invitado = {};
-  }
-
-
-  // Verificar confirmación previa
-  try {
-    const docRef = doc(db, "confirmaciones", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      yaConfirmo = true;
-      asistenciaPrevia = docSnap.data().asistencia;
+        if (docSnap.exists()) {
+            yaConfirmo = true;
+            asistenciaPrevia = docSnap.data().asistencia;
+        }
+    } catch (error) {
+        console.error("Error al obtener confirmación:", error);
     }
-  } catch (error) {
-    console.error("Error fetching confirmation:", error);
-  }
-}
-
-// Manejar el envío del formulario (POST)
-if (Astro.request.method === "POST") {
-  const data = await Astro.request.formData();
-  const confirma = data.get("confirma");
-
-  try {
-    const docRef = doc(db, "confirmaciones", id); // Usar el ID del invitado
-
-    await setDoc(docRef, {
-      nombre: invitado.nombre, // Usa el nombre del objeto invitado
-      asistencia: confirma,
-      timestamp: new Date(),
-    }, { merge: true });
-
-    // Redireccionar después de guardar, para evitar reenvíos
-    return Astro.redirect(`/invitado/${id}?confirmacion=true`);
-
-  } catch (error) {
-    console.error("Error saving confirmation:", error);
-      return Astro.redirect(`/invitado/${id}?confirmacion=false`); //Redirecciona en caso de error.
-  }
 }
 ---
 
-<html lang="es">
-<head>
-   {invitado && invitado.nombre && <title>Invitación de {invitado.nombre}</title>}
-  <meta charset="utf-8" />
-</head>
-<body>
-  <h1>¡Estás invitado/a!</h1>
-
-  {invitado && invitado.nombre && (
-    <>
-      <p>Nombre: {invitado.nombre}</p>
-      <p>Pases: {invitado.pases}</p>
-      <p>Mesa: {invitado.mesa}</p>
-    </>
-  )}
-
-{/* Muestra mensaje de confirmación/error *después* del POST, usando un parámetro en la URL */}
-  {Astro.url.searchParams.get('confirmacion') === 'true' && (
-    <p>¡Gracias por confirmar tu asistencia!</p>
-  )}
-   {Astro.url.searchParams.get('confirmacion') === 'false' && (
-      <p>
-        Hubo un error al confirmar tu asistencia, intentalo de nuevo
-      </p>
-    )}
-
-  {!yaConfirmo ? (
-    <ConfirmacionAsistencia idInvitado={id} nombreInvitado={invitado.nombre} />
-  ) : (
-    <p>
-      Ya confirmaste tu asistencia. {asistenciaPrevia === 'si' ? '¡Nos vemos en la boda!' : '¡Lamentamos que no puedas asistir!'}
-    </p>
-  )}
-</body>
-</html>
+<Layout>
+  <SplashScreen>
+    <html lang="es">
+        <head>
+            {invitado && invitado.nombre && <title>Invitación de {invitado.nombre}</title>}
+            <meta charset="utf-8" />
+        </head>
+        <body>
+            <Navbar />
+            <HeroSection invitado={invitado} />
+            <TextSection />
+            <CountdownSection />
+            <ParentsSection />
+            <ItinerarioCarousel />
+            <VestimentaSection />
+            <GiftSection />
+            <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
+                <h1 class="text-4xl font-semibold mb-4">¡Ya eres parte de nuestra boda!</h1>
+                {invitado && invitado.nombre && (
+                    <div class="mb-4">
+                        <p>Nombre: {invitado.nombre}</p>
+                        <p>Pases: {invitado.pases}</p>
+                        
+                    </div>
+                )}
+                <div class="font-semibold">
+                    {yaConfirmo ? (
+                        <p>
+                            Ya confirmaste tu asistencia. {asistenciaPrevia ? '¡Nos vemos en la boda!' : '¡Lamentamos que no puedas asistir!'}
+                        </p>
+                    ) : (
+                        invitado && invitado.nombre && id && <ConfirmacionAsistencia 
+                            idInvitado={id as string} 
+                            nombreInvitado={invitado.nombre} 
+                            pasesDisponibles={parseInt(invitado.pases, 10)} 
+                        />
+                    )}
+                
+              
+                </div>
+            <div class= "max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12" >
+          
+            <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado.pases, 10)} />
+            </div>
+         
+        </body>
+    </html>
+  </SplashScreen>
+</Layout>
