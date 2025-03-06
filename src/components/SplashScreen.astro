@@ -6,46 +6,80 @@
   <slot />
 </main>
 
-<div 
+<div
   id="splashScreen"
-  class="fixed inset-0 z-[1000] flex justify-center items-center cursor-pointer"
-  style={`
-    background-color: #ffc0cb; /* Mantiene el color rosa original */
-    background-image:
-      linear-gradient(to top right, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%),
-      linear-gradient(to bottom right, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%),
-      linear-gradient(to bottom left, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%),
-      linear-gradient(to top left, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%);
-    background-size: 100% 100%; /* Asegura que el gradiente cubra todo */
-    background-repeat: no-repeat; /* Evita la repetición */
-  `}
+  class="fixed inset-0 z-[1000] flex justify-center items-center cursor-pointer bg-pink-200"
 >
-  <img 
-    src= "/Logo.png"
-    alt="Logo"
-    width="200"  
-    height="200"
-    class="max-w-[50vw] animate-pulse pointer-events-none" 
-    data-tooltip="Copiado!"
-  />
+  {/* Left half of the envelope */}
+  <div id="leftHalf" class="absolute top-0 left-0 w-1/2 h-full" style={`
+      background-color: #e191a8;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0% 50%);
+      z-index: 1;
+       @media (min-width: 768px) {
+        clip-path: polygon(0 0, 100% 0, 75% 100%, 0 100%, 0% 50%);
+        transition: clip-path 0.5s ease-out; /* Smooth transition */
+      }
+      transition: clip-path 0.5s ease-out; /* Smooth transition */
+  `}></div>
+
+  {/* Right half of the envelope */}
+  <div id="rightHalf" class="absolute top-0 right-0 w-1/2 h-full" style={`
+      background-color: #e191a8;
+      clip-path: polygon(0 0, 100% 0, 100% 50%, 0% 100%, 0 100%);
+       @media (min-width: 768px) {
+       clip-path: polygon(25% 0, 100% 0, 100% 50%, 100% 100%, 0 100%);
+       transition: clip-path 0.5s ease-out;  /* Smooth transition */
+      }
+      transition: clip-path 0.5s ease-out; /* Smooth transition */
+  `}></div>
+
+    <div class="relative z-50 flex items-center justify-center w-full h-full">
+        <img
+          src="/Logo.png"
+          alt="Logo"
+          width="200"
+          height="200"
+          class="max-w-[50vw] animate-pulse pointer-events-none"
+          data-tooltip="Copiado!"
+        />
+    </div>
 </div>
 
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splashScreen');
     const main = document.getElementById('mainContent');
-    
+    const leftHalf = document.getElementById('leftHalf');
+    const rightHalf = document.getElementById('rightHalf');
+    let isOpen = false; // Keep track of the envelope state
+
     const hideSplash = () => {
-      splash.style.animation = 'fadeOut 0.5s ease-out forwards';
+        //Animate envelope open
+        if(!isOpen){
+            isOpen = true;
+            //Mobile
+             leftHalf.style.clipPath = 'polygon(0 0, 0% 0, 0% 100%, 0 100%, 0% 50%)';
+             rightHalf.style.clipPath = 'polygon(100% 0, 100% 0, 100% 50%, 100% 100%, 100% 100%)';
+
+            //Desktop
+            if (window.innerWidth >= 768) {
+                leftHalf.style.clipPath = 'polygon(0 0, 0% 0, 0% 100%, 0 100%, 0% 50%)';
+                rightHalf.style.clipPath = 'polygon(100% 0, 100% 0, 100% 50%, 100% 100%, 100% 100%)';
+            }
+            return; // Important:  Exit *before* fading out
+        }
+
+      splash.style.animation = 'fadeOut 0.9s ease-out forwards';
       setTimeout(() => {
         splash.style.display = 'none';
         main.classList.remove('hidden');
       }, 650);
     };
 
-    if(splash) {
-      splash.addEventListener('click', hideSplash);
-      setTimeout(hideSplash, 9000);
+
+    if (splash) {
+        splash.addEventListener('click', hideSplash);
+        setTimeout(hideSplash, 9000);  // Auto-hide after 9 seconds
     }
   });
 </script>
