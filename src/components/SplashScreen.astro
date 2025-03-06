@@ -1,6 +1,5 @@
 ---
 // components/SplashScreen.astro
-
 ---
 
 <main id="mainContent" class="hidden">
@@ -9,7 +8,18 @@
 
 <div 
   id="splashScreen"
-  class="fixed inset-0 z-[1000] bg-pink-100 flex justify-center items-center cursor-pointer">
+  class="fixed inset-0 z-[1000] flex justify-center items-center cursor-pointer"
+  style={`
+    background-color: #ffc0cb; /* Mantiene el color rosa original */
+    background-image:
+      linear-gradient(to top right, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%),
+      linear-gradient(to bottom right, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%),
+      linear-gradient(to bottom left, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%),
+      linear-gradient(to top left, transparent 49.5%, #e191a8 49.9%, #e191a8 50.1%, transparent 50.5%);
+    background-size: 100% 100%; /* Asegura que el gradiente cubra todo */
+    background-repeat: no-repeat; /* Evita la repetición */
+  `}
+>
   <img 
     src= "/Logo.png"
     alt="Logo"
@@ -21,7 +31,6 @@
 </div>
 
 <script is:inline>
-  // El mismo script anterior manteniendo la funcionalidad
   document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splashScreen');
     const main = document.getElementById('mainContent');
