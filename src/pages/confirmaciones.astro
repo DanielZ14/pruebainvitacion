@@ -1,14 +1,14 @@
 ---
 // pages/confirmaciones.astro
 import { db } from "../lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, getDoc } from "firebase/firestore";
 
 // --- Autenticación (SIMPLIFICADA - ¡NO USAR EN PRODUCCIÓN!) ---
-const contrasenaCorrecta = "contrasenaSuperSecreta"; // ¡CAMBIA ESTO! - MUY IMPORTANTE
+const contrasenaCorrecta = "contrasenaSuperSecreta"; // ¡CAMBIA ESTO!
 const contrasenaIngresada = Astro.url.searchParams.get("pass");
 
 if (contrasenaIngresada !== contrasenaCorrecta) {
-    return new Response("Acceso denegado", { status: 403 }); // Forbidden
+    return new Response("Acceso denegado", { status: 403 });
 }
 // --- Fin Autenticación Simplificada ---
 
@@ -17,34 +17,67 @@ const confirmaciones = [];
 let totalAsistentes = 0;
 let totalNoAsistentes = 0;
 let totalAsistentesConfirmados = 0;
-let errorCarga = false; // Variable para controlar si hubo un error
+let totalPasesLibres = 0; // Initialize totalPasesLibres
+let errorCarga = false;
+
 
 try {
-  const q = query(collection(db, "confirmaciones"), orderBy("timestamp", "desc"));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-    confirmaciones.push(data);
+    const qConfirmaciones = query(collection(db, "confirmaciones"), orderBy("timestamp", "desc"));
+    const querySnapshotConfirmaciones = await getDocs(qConfirmaciones);
 
-    // Calcula estadísticas
-    if (data.asistencia) {
-      totalAsistentes++;
-    } else {
-      totalNoAsistentes++;
+      for (const docConfirmacion of querySnapshotConfirmaciones.docs) {
+        const dataConfirmacion = docConfirmacion.data();
+        confirmaciones.push(dataConfirmacion);
+
+
+        // Calcula estadísticas
+        if (dataConfirmacion.asistencia) {
+            totalAsistentes++;
+        } else {
+            totalNoAsistentes++;
+        }
+
+        // Calculate pasesLibres *always*, but conditionally subtract
+        if (typeof dataConfirmacion.pases === 'number') { // Ensure pases is a number
+            if (dataConfirmacion.asistencia && typeof dataConfirmacion.asistentesConfirmados === 'number') {
+                totalPasesLibres += dataConfirmacion.pases - dataConfirmacion.asistentesConfirmados;
+            } else if (!dataConfirmacion.asistencia) {
+                // If they decline, *all* their passes are free
+                totalPasesLibres += dataConfirmacion.pases;
+            }
+        }
+
+
+        if(dataConfirmacion.asistentesConfirmados){
+            totalAsistentesConfirmados += parseInt(dataConfirmacion.asistentesConfirmados);
+        } else {
+            totalAsistentesConfirmados += 0;
+        }
     }
-    if(data.asistentesConfirmados){
-        totalAsistentesConfirmados += parseInt(data.asistentesConfirmados);
-    } else {
-        totalAsistentesConfirmados += 0;
-    }
-  });
+
 } catch (e) {
-  console.error("Error al consultar confirmaciones:", e);
-  errorCarga = true; // Marca que hubo un error
+    console.error("Error al consultar confirmaciones/invitados:", e);
+    errorCarga = true;
 }
 
-// No es necesario preparar datos especiales para Google Charts aquí; lo haremos en el script.
+// Calcula el porcentaje de no asistentes.
+const porcentajeNoAsistentes = confirmaciones.length > 0 ? (totalNoAsistentes / confirmaciones.length) * 100 : 0;
+const porcentajeAsistentes = 100 - porcentajeNoAsistentes;
 
+//Helper function to format the date
+function formatDate(timestamp) {
+    if (!timestamp) {
+        return '-'; // Or any other suitable placeholder
+    }
+    const date = timestamp.toDate();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${day}/${month}/${year}, ${hours}:${minutes}`;
+}
 ---
 
 <html lang="es">
@@ -54,18 +87,78 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
-    /* Estilos adicionales si necesitas algo que no esté en Tailwind */
-    #piechart { /* Añade un poco de estilo para centrar el gráfico */
+    /* Estilos para el gráfico circular */
+    .pie-chart-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: 100%;
-        max-width: 500px; /* O el tamaño que desees */
-        margin: 0 auto;
     }
 
+    .pie-chart {
+      width: 200px; /* Ajusta según necesites. */
+      height: 200px;
+      border-radius: 50%;
+      background-image: conic-gradient(
+          #F44336 0deg,
+          #F44336 var(--no-asistentes-deg),
+          #4CAF50 var(--no-asistentes-deg),
+          #4CAF50 360deg
+      );
+    }
+
+    .pie-chart-label {
+        text-align: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-top: 0.5rem;
+    }
+
+    /* Contenedor para la leyenda */
+    .legend {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+        gap: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .legend-color {
+        width: 15px;
+        height: 15px;
+        margin-right: 5px;
+    }
+
+    .legend-color.red {
+        background-color: #F44336;
+    }
+    .legend-color.green {
+        background-color: #4CAF50;
+    }
+
+      /* Media query para dispositivos móviles */
+    @media (max-width: 768px) {
+        .pie-chart {
+          width: 150px;
+          height: 150px;
+        }
+        .pie-chart-label{
+            font-size: 1em;
+        }
+        .legend {
+          flex-direction: column;
+          align-items: center;
+        }
+    }
   </style>
 </head>
 <body class="bg-gray-100 font-sans">
   <div class="container mx-auto p-8">
-    <h1 class="text-3xl font-bold mb-6 text-center">Confirmaciones de Asistencia</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center">Confirmaciones de Asistencia Boda Silvia & Christian</h1>
 
     {errorCarga && (
       <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -74,28 +167,45 @@ try {
       </div>
     )}
 
-
-  <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-2">Pases Confirmados</h2>
-      <p class="text-4xl font-bold text-green-600">{totalAsistentesConfirmados}</p>
-    </div>
-      <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-2">Total de Respuestas</h2>
-      <p class="text-4xl font-bold text-blue-600">{confirmaciones.length}</p>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-xl font-semibold mb-2">Personas que NO Asistirán</h2>
-          <p class="text-4xl font-bold text-red-500">{totalNoAsistentes}</p>
+    <div class="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h2 class="text-xl font-semibold mb-2">Total de Respuestas</h2>
+        <p class="text-4xl font-bold text-blue-600">{confirmaciones.length}</p>
       </div>
-
-  </div>
-
-
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h2 class="text-xl font-semibold mb-2">Pases Confirmados</h2>
+        <p class="text-4xl font-bold text-green-600">{totalAsistentesConfirmados}</p>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+            <h2 class="text-xl font-semibold mb-2">Personas que NO Asistirán</h2>
+            <p class="text-4xl font-bold text-red-500">{totalNoAsistentes}</p>
+        </div>
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h2 class="text-xl font-semibold mb-2">Pases Libres</h2>
+        <p class="text-4xl font-bold text-indigo-600">{totalPasesLibres}</p>
+      </div>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div id="piechart" class="bg-white rounded-lg shadow p-4"></div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="pie-chart-container">
+          <div class="pie-chart" style={`--no-asistentes-deg: ${porcentajeNoAsistentes * 3.6}deg;`}>
+          </div>
+        </div>
+        <div class="pie-chart-label">{porcentajeAsistentes.toFixed(1)}%</div>
+
+          <div class="legend">
+              <div class="legend-item">
+                  <div class="legend-color green"></div>
+                  <div>Asistirán</div>
+              </div>
+              <div class="legend-item">
+                  <div class="legend-color red"></div>
+                  <div>No Asistirán</div>
+              </div>
+          </div>
+
+      </div>
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-x-auto">
@@ -104,8 +214,9 @@ try {
           <tr>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asistencia</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha/Hora</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asistentes Confirmados</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pases Confirmados</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pases Otorgados</th>
+             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha/Hora</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -119,49 +230,17 @@ try {
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">No</span>
                 )}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">{confirmacion.timestamp ? confirmacion.timestamp.toDate().toLocaleString() : ''}</td>
-              <td class="px-6 py-4 whitespace-nowrap">{confirmacion.asistentesConfirmados}</td>
+
+              <td class="px-6 py-4 whitespace-nowrap">{confirmacion.asistentesConfirmados ?? 0}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                {typeof confirmacion.pases === 'number' ? confirmacion.pases : '-'}
+              </td>
+                <td class="px-6 py-4 whitespace-nowrap">{formatDate(confirmacion.timestamp)}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   </div>
-
-
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            // Prepara los datos *dentro* de la función drawChart.
-            // Usa JSON.stringify para pasar los datos de Astro a JavaScript.
-            var data = google.visualization.arrayToDataTable([
-                ['Asistencia', 'Cantidad'], // Encabezados de columna
-                ['Asistirán',     !{JSON.stringify(totalAsistentes)}],
-                ['No Asistirán',  !{JSON.stringify(totalNoAsistentes)}]
-            ]);
-
-            var options = {
-                title: 'Asistencia vs No asistencia',
-                //is3D: true,  // Opcional: Para un gráfico 3D
-                pieHole: 0.4, // Opcional: Para un gráfico de dona (donut)
-                colors: ['#4CAF50', '#F44336'], // Colores personalizados (verde, rojo)
-                // Puedes agregar más opciones de personalización aquí
-            };
-
-
-            // Dibuja el gráfico *solo si no hubo errores*.
-            if (!{JSON.stringify(errorCarga)}) {
-                var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-                chart.draw(data, options);
-            }
-            else {
-                //Opcional. Si hay error no se muestra el grafico
-                document.getElementById("piechart").innerHTML = "<p>No se pudo cargar el gráfico.</p>";
-            }
-        }
-    </script>
 </body>
 </html>

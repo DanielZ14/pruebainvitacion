@@ -32,13 +32,13 @@ if (docSnap.exists()) {
 
 // --- Handle Confirmation Form Submission ---
 if (Astro.request.method === "POST") {
-  const data = await Astro.request.formData(); // *ONE* call to formData()
+  const data = await Astro.request.formData();
   const confirma = data.get("confirma") === "si";
   const asistentesConfirmadosStr = data.get("asistentes");
   let asistentesConfirmados = 0;
 
-  if (confirma) {
-    // Validate asistentesConfirmados (server-side!)
+    if (confirma) {
+        // Validate asistentesConfirmados (server-side!)
         if (typeof asistentesConfirmadosStr === 'string') {
             asistentesConfirmados = parseInt(asistentesConfirmadosStr, 10);
         }
@@ -51,74 +51,48 @@ if (Astro.request.method === "POST") {
                 success: false,
                 message: `Por favor, ingresa un número válido de asistentes (entre 1 y ${pasesDisponibles}).`,
             };
-           showConfirmationForm = true; //show form again, with error.
+            showConfirmationForm = true; // Show form again, with error.
         }
-  }
-    // Save to Firestore if validation passed
-  if(confirmationResult.success !== false){
-    try {
-        await setDoc(
-          docRef,
-          {
-            nombre: nombreInvitado,
-            asistencia: confirma,
-            asistentesConfirmados: confirma ? asistentesConfirmados : 0,
-            timestamp: new Date(), // Use client-side date!
-          },
-          { merge: true }
-        );
+    }
 
-        confirmationResult = {
-          success: true,
-          message: confirma
-            ? `¡Gracias por confirmar la asistencia de ${asistentesConfirmados} persona${asistentesConfirmados === 1 ? '' : 's'}!`
-            : "Lamentamos que no puedas asistir.",
-        };
-        showConfirmationForm = false; // Hide the form
+  // Save to Firestore REGARDLESS of confirmation, but only if validation passed (or if declining)
+    if (!confirma || confirmationResult.success !== false) { //  <-- KEY CHANGE
+        try {
+            await setDoc(
+              docRef,
+              {
+                nombre: nombreInvitado,
+                asistencia: confirma,
+                asistentesConfirmados: confirma ? asistentesConfirmados : 0,
+                timestamp: new Date(),
+                pases: pasesDisponibles
+              },
+              { merge: true }
+            );
 
-      } catch (error) {
-        console.error("Error al guardar la confirmación:", error);
-        confirmationResult = {
-          success: false,
-          message: "Hubo un error al procesar tu solicitud.  Por favor, intenta de nuevo.",
-        };
-        showConfirmationForm = true;
-      }
-  } else {
-    //Confirma == No
-    try {
-        await setDoc(
-          docRef,
-          {
-            nombre: nombreInvitado,
-            asistencia: confirma,
-            asistentesConfirmados: 0,
-            timestamp: new Date(), // Use client-side date!
-          },
-          { merge: true }
-        );
+            confirmationResult = {
+              success: true,
+              message: confirma
+                ? `¡Gracias por confirmar la asistencia de ${asistentesConfirmados} persona${asistentesConfirmados === 1 ? '' : 's'}!`
+                : "Lamentamos que no puedas asistir.",
+            };
+            showConfirmationForm = false; // Hide the form
 
-        confirmationResult = {
-          success: true,
-          message: "Lamentamos que no puedas asistir."
-        };
-        showConfirmationForm = false; // Hide the form
-
-      } catch (error) {
-        console.error("Error al guardar la confirmación:", error);
-        confirmationResult = {
-          success: false,
-          message: "Hubo un error al procesar tu solicitud.  Por favor, intenta de nuevo.",
-        };
-        showConfirmationForm = true;
-      }
-  }
+          } catch (error) {
+            console.error("Error al guardar la confirmación:", error);
+            confirmationResult = {
+              success: false,
+              message: "Hubo un error al procesar tu solicitud.  Por favor, intenta de nuevo.",
+            };
+            showConfirmationForm = true; // Keep form visible on error
+          }
+    }
 }
 ---
 
 {/* Conditionally render the confirmation form */}
 {showConfirmationForm && (
-  <div class="flex flex-col space-x-5 space-y-8">
+    <div class="flex flex-col space-x-5 space-y-8">
       <form method="post">
         <input type="hidden" name="confirma" value="si" />
         <label
@@ -135,37 +109,38 @@ if (Astro.request.method === "POST") {
           max={pasesDisponibles}
           value={1}
           required
-          class="mt-1 block w-24 text-center text-xl border rounded-md mx-auto" />
-<div class="flex justify-center space-x-12 mt-4">
-         <button
-          type="submit"
-          class="self-center  bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Sí, asistiré
-        </button>
+          class="mt-1 block w-24 text-center text-xl border rounded-md mx-auto"
+        />
+        <div class="flex justify-center space-x-12 mt-4">
+          <button
+            type="submit"
+            class="self-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Sí, asistiré
+          </button>
+        </div>
       </form>
       <form method="post">
-        <input type="hidden" name="confirma" value="no" /></div>
+        <input type="hidden" name="confirma" value="no" />
         <div class="flex justify-center space-x-12 mt-4">
-        <button
-          type="submit"
-          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          No asistiré ¡lo siento!
-        </button>
-
+          <button
+            type="submit"
+            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            No asistiré ¡lo siento!
+          </button>
+        </div>
       </form>
     </div>
-  </div>
-)}
+  )}
 
-{/* Confirmation Result Message (Conditional) */}
-{confirmationResult.success != null && (
-  <div
-    class={`p-4 mb-4 rounded ${confirmationResult.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-      }`}
-  >
-    <p class="font-bold">{confirmationResult.success ? "Confirmación exitosa" : "Error"}</p>
-    <p>{confirmationResult.message}</p>
-  </div>
+  {/* Confirmation Result Message (Conditional) */}
+  {confirmationResult.success != null && (
+    <div
+      class={`p-4 mb-4 rounded ${confirmationResult.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+        }`}
+    >
+      <p class="font-bold">{confirmationResult.success ? "Confirmación exitosa" : "Error"}</p>
+      <p>{confirmationResult.message}</p>
+    </div>
 )}
