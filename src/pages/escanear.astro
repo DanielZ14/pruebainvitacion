@@ -138,7 +138,10 @@ if (Astro.request.method === "POST") {
           {invitadoData.confirmacion &&(
             <>
                 <p class="mb-1"><strong>Pases Confirmados:</strong> {invitadoData.confirmacion?.asistentesConfirmados ?? 0}</p>
-               <p if={invitadoData.confirmacion && !invitadoData.confirmacion.asistencia}><strong>Asistencia: </strong> No</p>
+                <p class="mb-1">
+                  <strong>Asistencia:</strong>{" "}
+                  {invitadoData.confirmacion.asistencia ? "Sí" : "No"} {/* Corrected ternary operator */}
+                </p>
             </>
           )}
 
@@ -154,6 +157,8 @@ if (Astro.request.method === "POST") {
   </div>
 
 <script client:load>
+    let html5QrcodeScanner; // Declare outside the functions
+
     function onScanSuccess(decodedText, decodedResult) {
         // Handle on success condition with the decoded text or result.
         console.log(`Scan result: ${decodedText}`, decodedResult);
@@ -167,10 +172,16 @@ if (Astro.request.method === "POST") {
         //console.warn(`QR error = ${errorMessage}`); // Uncomment for debugging
     }
 
+    // Initialize the scanner *only once* when the script loads:
+    function initializeScanner() {
+        if(!html5QrcodeScanner) { // Check if it's already initialized
+            html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: {width: 250, height: 250}, aspectRatio: 1.0 });
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+        }
+    }
+    initializeScanner(); // Call the initialization function
 
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader", { fps: 10, qrbox: {width: 250, height: 250} , aspectRatio: 1.0}); //,  /* verbose= */ false});
-    html5QrcodeScanner.render(onScanSuccess, onScanError);
 
     const qrForm = document.getElementById('qr-form');
     const idForm = document.getElementById('id-form'); // Get the ID form
