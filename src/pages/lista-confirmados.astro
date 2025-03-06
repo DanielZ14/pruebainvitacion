@@ -1,0 +1,92 @@
+---
+// pages/lista-confirmados.astro
+import { db } from "../lib/firebase";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+
+let invitadosConfirmados: any[] = [];
+let errorCarga = false;
+
+try {
+    // 1. Get all confirmations where asistencia is true
+    const qConfirmaciones = query(collection(db, "confirmaciones"), where("asistencia", "==", true));
+    const querySnapshotConfirmaciones = await getDocs(qConfirmaciones);
+
+    // 2. For each confirmation, get the corresponding invitado data
+    for (const docConfirmacion of querySnapshotConfirmaciones.docs) {
+        const confirmacionData = docConfirmacion.data();
+        const invitadoId = docConfirmacion.id; // The confirmation doc ID *is* the invitado ID.
+
+        const docRefInvitado = doc(db, "invitados", invitadoId);
+        const docSnapInvitado = await getDoc(docRefInvitado);
+
+        if (docSnapInvitado.exists()) {
+            const invitadoData = docSnapInvitado.data();
+             // Combine the data and add to the array
+            invitadosConfirmados.push({
+                id: invitadoId,
+                nombre: invitadoData.nombre,
+                mesa: invitadoData.mesa,
+                pasesConfirmados: confirmacionData.asistentesConfirmados,
+            });
+        } else {
+          // Handle the case where the invitado document doesn't exist (shouldn't happen normally)
+          console.warn(`Invitado not found for confirmation ID: ${invitadoId}`);
+        }
+    }
+    // Sort the array
+    invitadosConfirmados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+} catch (error) {
+    console.error("Error fetching data:", error);
+    errorCarga = true;
+}
+---
+
+<html lang="es">
+<head>
+  <title>Lista de Invitados Confirmados</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans p-4">
+  <h1 class="text-2xl font-bold mb-4 text-center">Lista de Invitados Confirmados</h1>
+
+  {errorCarga && (
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <strong class="font-bold">Error:</strong>
+      <span class="block sm:inline">Hubo un problema al cargar los datos. Por favor, recarga la página.</span>
+    </div>
+  )}
+
+  {!errorCarga && (
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white shadow rounded-lg">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Mesa</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pases Confirmados</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {invitadosConfirmados.map((invitado) => (
+            <tr key={invitado.id}>
+              <td class="px-4 py-2 whitespace-nowrap">{invitado.nombre}</td>
+              <td class="px-4  text-blue-700 text-lg bold py-2 whitespace-nowrap">{invitado.mesa ?? '-'}</td>
+              <td class="px-4 py-2 whitespace-nowrap">{invitado.pasesConfirmados}</td>
+              <td class="px-4 py-2 whitespace-nowrap">{invitado.id}</td>
+              
+            </tr>
+          ))}
+        </tbody>
+      </table>
+        {invitadosConfirmados.length === 0 && (
+            <p class="text-center text-gray-500 mt-4">No hay invitados confirmados.</p>
+        )}
+    </div>
+  )}
+</body>
+</html>
