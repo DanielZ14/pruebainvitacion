@@ -6,7 +6,6 @@ import { db } from '../../lib/firebase';
 import { doc, getDoc } from "firebase/firestore";
 import ConfirmacionAsistencia from '../../components/ConfirmacionAsistencia.astro';
 import DescargaPases from '../../components/DescargaPases.astro';
-// import { getInvitadosData } from '../../lib/utils'; // <-- ¡ELIMINA ESTO!
 import HeroSection from "../../components/HeroSection.astro";
 import TextSection from "../../components/TextSection.astro";
 import Layout from '../../layouts/Layout.astro';
@@ -20,60 +19,48 @@ import LibroDeDeseos from '../../components/LibroDeDeseos.astro';
 import ContactoSection from '../../components/ContactoSection.astro';
 import MostrarPases from "../../components/MostrarPases.astro";
 
-
-const { id } = Astro.params;
-
 interface Invitado {
-    id: string; //Aunque ahora lo obtenemos implicitamente, es bueno mantener la interfaz
+    id: string;
     nombre: string;
     pases: string;
     mesa: string;
-    // Agrega otros campos de tu colección de invitados si los necesitas.
 }
 
 // Estado de carga y manejo de errores
-let invitado: Invitado | null = null; // Inicializa como null
+let invitado: Invitado | null = null;
 let loading = true;
 let error = false;
 
+const { id } = Astro.params;
 
 if (id) {
     try {
-        // --- Obtener datos de Firestore, NO del CSV ---
-        const docRef = doc(db, "invitados", id); // Usa "invitados", no "confirmaciones"
+        const docRef = doc(db, "invitados", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-            // Extrae los datos y crea el objeto invitado
             const data = docSnap.data();
-             invitado = {
-                id: docSnap.id, // Puedes usar docSnap.id directamente
+            invitado = {
+                id: docSnap.id,
                 nombre: data.nombre,
                 pases: data.pases,
                 mesa: data.mesa,
-                // ...  agrega otros campos aquí ...
             };
-
         } else {
-            // Manejo de caso en que el invitado no existe
             console.log("No such document!");
-             error = true; // Establece el estado de error
-
+            error = true;
         }
     } catch (err) {
         console.error("Error loading guest data:", err);
-        error = true; // Establece el estado de error en caso de error de red, etc.
-
+        error = true;
     } finally {
-        loading = false; // Finaliza la carga, independientemente del resultado
+        loading = false;
     }
 }
-
 
 let yaConfirmo = false;
 let asistenciaPrevia = null;
 
-// La parte de confirmaciones queda igual (ya usa Firestore).
 if (id) {
     try {
         const docRef = doc(db, "confirmaciones", id);
@@ -87,13 +74,14 @@ if (id) {
         console.error("Error al obtener confirmación:", error);
     }
 }
+
+const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invitación a nuestra boda';
 ---
 
-<Layout>
+<Layout title={pageTitle}>
     <SplashScreen>
         <html lang="es">
         <head>
-            {invitado && invitado.nombre && <title>Invitación de {invitado.nombre}</title>}
             <meta charset="UTF-8" />
         </head>
         <body>
@@ -143,15 +131,35 @@ if (id) {
                             )}
                         </div>
                     </div>
-                    <div class= "max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12" >
-                        <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado.pases, 10)} />
+                    <div class="max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12">
+                        <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado?.pases || '0', 10)} />
                     </div>
                   </section>
                     
                     <TextSection />
+
+                    <LibroDeDeseos idInvitado={id || ''} nombreInvitado={invitado?.nombre || ''}/>
                 </>
             )}
         </body>
     </html>
 </SplashScreen>
 </Layout>
+
+<style>
+  main {
+    width: 100%;
+  }
+
+  .section-container {
+    max-width: 800px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .section-container {
+      margin: 2rem auto;
+    }
+  }
+</style>

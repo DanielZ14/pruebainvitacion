@@ -1,5 +1,4 @@
-
-<nav class="fixed w-full top-0 z-50  backdrop-blur-md shadow-sm">
+<nav class="fixed w-full top-0 z-50 bg-white shadow-sm">
   <div class="container mx-auto px-4">
     <div class="flex justify-between items-center h-16">
       {/* Logo */}
@@ -12,17 +11,17 @@
       </a>
 
       {/* Menú Desktop */}
-      <div class="hidden lg:flex space-x-8 text-white">     
-        <a href="#ubicacion" class="nav-link">Ubicaciones</a>
-        <a href="#regalos" class="nav-link">Mesa de regalos</a>
-        <a href="#vestimenta" class="nav-link">Código de vestimenta</a>
-        <a href="#contacto" class="nav-link">Contacto</a>
+      <div class="hidden lg:flex space-x-8">     
+        <a href="#ubicacion" class="nav-link text-gray-700 hover:text-pink-500">Ubicaciones</a>
+        <a href="#regalos" class="nav-link text-gray-700 hover:text-pink-500">Mesa de regalos</a>
+        <a href="#vestimenta" class="nav-link text-gray-700 hover:text-pink-500">Código de vestimenta</a>
+        <a href="#contacto" class="nav-link text-gray-700 hover:text-pink-500">Contacto</a>
       </div>
 
       {/* Botón Hamburguesa */}
       <button 
         id="menuBtn"
-        class="lg:hidden p-2 text-white hover:text-pink-400"
+        class="lg:hidden p-2 text-gray-700 hover:text-pink-500"
         aria-label="Abrir menú"
       >
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,30 +30,30 @@
       </button>
     </div>
 
-     {/* Menú Mobile - Versión pantalla completa */}
-     <div 
-     id="mobileMenu" 
-     class="lg:hidden hidden fixed inset-0 h-screen bg-white/95 backdrop-blur-xl z-40 transition-all duration-300"
-   >
-     <div class="h-full flex flex-col justify-center items-center space-y-8 text-center">
-       <a href="#ubicacion" class="nav-link-mobile text-2xl">Ubicaciones</a>
-       <a href="#regalos" class="nav-link-mobile text-2xl">Mesa de regalos</a>
-       <a href="#vestimenta" class="nav-link-mobile text-2xl">Código de vestimenta</a>
-       <a href="#contacto" class="nav-link-mobile text-2xl">Contacto</a>
-       <a href="#confirmacion" class="nav-link-mobile text-2xl">Confirma tu asistencia</a>
-       
-       {/* Botón para cerrar */}
-       <button 
-         onclick="document.getElementById('mobileMenu').classList.add('hidden')"
-         class="absolute top-4 right-4 p-2 text-gray-600 hover:text-pink-500"
-       >
-         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-         </svg>
-       </button>
-     </div>
-   </div>
- </div>
+    {/* Menú Mobile - Versión pantalla completa */}
+    <div 
+      id="mobileMenu" 
+      class="lg:hidden hidden fixed inset-0 h-screen bg-white z-40 transition-all duration-300"
+    >
+      <div class="h-full flex flex-col justify-center items-center space-y-8 text-center relative">
+        <a href="#ubicacion" class="nav-link-mobile text-2xl text-gray-700 hover:text-pink-500">Ubicaciones</a>
+        <a href="#regalos" class="nav-link-mobile text-2xl text-gray-700 hover:text-pink-500">Mesa de regalos</a>
+        <a href="#vestimenta" class="nav-link-mobile text-2xl text-gray-700 hover:text-pink-500">Código de vestimenta</a>
+        <a href="#contacto" class="nav-link-mobile text-2xl text-gray-700 hover:text-pink-500">Contacto</a>
+        
+        {/* Botón para cerrar */}
+        <button 
+          id="closeMenuBtn"
+          class="absolute top-4 right-4 p-2 text-gray-700 hover:text-pink-500"
+          aria-label="Cerrar menú"
+        >
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <style>
@@ -107,53 +106,73 @@
     }
   }
 
+  .nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #ec4899; /* pink-500 */
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
 </style>
 
 <script is:inline>
-  function showMenu() {
-    const mobileMenu = document.getElementById('mobileMenu');
-    mobileMenu.classList.remove('hidden', 'circle-out');
-    mobileMenu.classList.add('circle-in');
-    document.body.style.overflow = 'hidden';
-
-    // Animación items
-    document.querySelectorAll('.nav-link-mobile').forEach((link, index) => {
-      link.style.setProperty('--index', index);
-    });
-  }
-
-  function hideMenu() {
-    const mobileMenu = document.getElementById('mobileMenu');
-    mobileMenu.classList.remove('circle-in');
-    mobileMenu.classList.add('circle-out');
-
-    setTimeout(() => {
-      mobileMenu.classList.add('hidden');
-      document.body.style.overflow = 'auto';
-    }, 1000); // Duración de la animación de salida
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
     const menuBtn = document.getElementById('menuBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileLinks = document.querySelectorAll('.nav-link-mobile');
 
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showMenu();
-    });
+    function showMenu() {
+      mobileMenu.classList.remove('hidden', 'circle-out');
+      mobileMenu.classList.add('circle-in');
+      document.body.style.overflow = 'hidden';
+    }
 
-    // Cerrar al hacer click fuera
-    document.addEventListener('click', (e) => {
-      if (!document.getElementById('mobileMenu').contains(e.target)) {
-        hideMenu();
-      }
-    });
+    function hideMenu() {
+      mobileMenu.classList.remove('circle-in');
+      mobileMenu.classList.add('circle-out');
+      setTimeout(() => {
+        mobileMenu.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }, 600);
+    }
 
-    // **NUEVO CÓDIGO: Cerrar menú al hacer clic en un enlace del menú móvil**
-    const mobileLinks = document.querySelectorAll('#mobileMenu .nav-link-mobile');
+    // Abrir menú
+    menuBtn.addEventListener('click', showMenu);
+
+    // Cerrar menú con el botón X
+    closeMenuBtn.addEventListener('click', hideMenu);
+
+    // Cerrar menú al hacer clic en los enlaces
     mobileLinks.forEach(link => {
       link.addEventListener('click', () => {
-        hideMenu(); // Llama a hideMenu() al hacer clic en un enlace
+        hideMenu();
+        // Dar tiempo para que el menú se cierre antes de navegar
+        setTimeout(() => {
+          const href = link.getAttribute('href');
+          const element = document.querySelector(href);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 300);
       });
+    });
+
+    // Inicializar índices para la animación
+    mobileLinks.forEach((link, index) => {
+      link.style.setProperty('--index', index);
     });
   });
 </script>

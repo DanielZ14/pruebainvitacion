@@ -1,0 +1,92 @@
+---
+interface Props {
+  nombreInvitado: string;
+  deseo: string;
+  fecha: Date;
+}
+
+const { nombreInvitado, deseo, fecha } = Astro.props;
+
+// Formatear la fecha
+const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+});
+---
+
+<div class="tarjeta-deseo">
+  <div class="encabezado">
+    <div class="avatar">{nombreInvitado[0].toUpperCase()}</div>
+    <div class="info-invitado">
+      <h3>{nombreInvitado}</h3>
+      <span class="fecha">{fechaFormateada}</span>
+    </div>
+  </div>
+  <div class="contenido">
+    <p>{deseo}</p>
+  </div>
+</div>
+
+<style>
+  .tarjeta-deseo {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease;
+  }
+
+  .tarjeta-deseo:hover {
+    transform: translateY(-2px);
+  }
+
+  .encabezado {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-right: 1rem;
+  }
+
+  .info-invitado {
+    flex-grow: 1;
+  }
+
+  .info-invitado h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  .fecha {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .contenido {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #2c3e50;
+  }
+
+  .contenido p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+</style> 

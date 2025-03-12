@@ -3,19 +3,29 @@
 import { db } from "../lib/firebase";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 
-let invitadoData: any = null;
+interface InvitadoData {
+    id: string;
+    nombre: string;
+    mesa?: string;
+    pases?: number;
+    confirmacion?: {
+        asistentes?: number;
+        asistencia?: boolean;
+    };
+}
+
+let invitadoData: InvitadoData | InvitadoData[] | null = null;
 let errorMessage: string | null = null;
-let scannedId: string | null = null; // Store scanned ID separately
+let scannedId: string | null = null;
 
 if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
-    const searchType = formData.get("searchType"); // 'qr' or 'id'
+    const searchType = formData.get("searchType");
     const qrResult = formData.get("qr-result");
-    const idInput = formData.get("id-input"); // Get the ID input
+    const nameInput = formData.get("name-input")?.toString().trim();
 
     console.log("searchType", searchType);
-    console.log("searchInput", idInput);
-
+    console.log("searchInput", qrResult || nameInput);
 
     try {
         if (searchType === "qr" && qrResult) {
@@ -24,21 +34,33 @@ if (Astro.request.method === "POST") {
             const docRef = doc(db, "invitados", qrResult.toString());
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                invitadoData = { id: docSnap.id, ...docSnap.data() };
+                invitadoData = { id: docSnap.id, ...docSnap.data() } as InvitadoData;
             } else {
                 errorMessage = "Invitado no encontrado (ID inválido).";
             }
-        } else if (searchType === "id" && idInput) {
-            // ID Search (direct document fetch)
-            const docRef = doc(db, "invitados", idInput.toString());
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                invitadoData = { id: docSnap.id, ...docSnap.data() };
+        } else if (searchType === "name" && nameInput) {
+            // Name Search
+            const invitadosRef = collection(db, "invitados");
+            const q = query(invitadosRef, where("nombre", ">=", nameInput), where("nombre", "<=", `${nameInput}\uf8ff`));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                // Si solo hay un resultado, lo mostramos directamente
+                if (querySnapshot.size === 1) {
+                    const doc = querySnapshot.docs[0];
+                    invitadoData = { id: doc.id, ...doc.data() } as InvitadoData;
+                } else {
+                    // Si hay múltiples resultados, los mostramos todos
+                    invitadoData = querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    })) as InvitadoData[];
+                }
             } else {
-                errorMessage = "Invitado no encontrado (ID inválido).";
+                errorMessage = "No se encontraron invitados con ese nombre.";
             }
         } else {
-            errorMessage = "Por favor, escanea un código QR o ingresa un ID.";
+            errorMessage = "Por favor, escanea un código QR o ingresa un nombre.";
         }
 
         // Fetch confirmation data (if any, and for single results)
@@ -48,11 +70,20 @@ if (Astro.request.method === "POST") {
             if (confirmacionSnap.exists()) {
                 invitadoData = { ...invitadoData, confirmacion: confirmacionSnap.data() };
             }
+        } else if (Array.isArray(invitadoData)) {
+            // Fetch confirmation data for all results
+            for (let i = 0; i < invitadoData.length; i++) {
+                const confirmacionRef = doc(db, "confirmaciones", invitadoData[i].id);
+                const confirmacionSnap = await getDoc(confirmacionRef);
+                if (confirmacionSnap.exists()) {
+                    invitadoData[i] = { ...invitadoData[i], confirmacion: confirmacionSnap.data() };
+                }
+            }
         }
 
     } catch (error) {
         console.error("Error fetching data:", error);
-        errorMessage = "Error al obtener datos.  Verifica tu conexión.";
+        errorMessage = "Error al obtener datos. Verifica tu conexión.";
     }
 }
 
@@ -66,19 +97,23 @@ if (Astro.request.method === "POST") {
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    #reader__scan_region video {
-      width: 100% !important;
-      height: auto !important;
-      object-fit: cover;
+    #reader {
+        width: 100% !important;
+        max-width: 600px;
+        margin: 0 auto;
     }
-    #reader__no-video{
+    #reader__scan_region video {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    #reader__no-video {
         display: none !important;
     }
-    /* Hide the file input */
     #reader input[type="file"] {
         display: none;
     }
-
     #reader__scan_region {
         border: 2px solid #ccc;
         border-radius: 8px;
@@ -87,155 +122,313 @@ if (Astro.request.method === "POST") {
     #reader__scan_result {
         margin-top: 10px;
     }
-     .hidden {
+    .hidden {
         display: none;
     }
-
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+        backdrop-filter: blur(4px);
+    }
+    .modal-container {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        z-index: 50;
+    }
+    .modal-open {
+        display: block;
+    }
+    /* Mejoras para móvil */
+    @media (max-width: 768px) {
+        #reader__scan_region {
+            margin: -1rem;
+            border-radius: 0;
+            border: none;
+        }
+        #reader__scan_region video {
+            border-radius: 0;
+        }
+        .modal-container {
+            width: 95%;
+        }
+    }
   </style>
 </head>
 <body class="bg-gray-100 font-sans p-4">
   <h1 class="text-2xl font-bold mb-4 text-center">Escanear/Buscar Invitado</h1>
 
   <div class="max-w-md mx-auto bg-white rounded-lg shadow p-6">
-
-    <div id="reader" width="600px"></div>
-     <form method="post" id="qr-form">
+    <div id="reader" class="mb-4"></div>
+    <form method="post" id="qr-form" class="hidden">
         <input type="hidden" name="searchType" value="qr">
         <input type="hidden" name="qr-result" id="qr-result" value="">
     </form>
 
-
     <div class="my-4 border-t border-gray-300"></div>
 
-    {/* Manual ID Input Form */}
-    <form method="post" class="mb-4" id="id-form">
-      <input type="hidden" name="searchType" value="id">
-      <label for="id-input" class="block text-sm font-medium text-gray-700">
-        Ingresa el ID del Invitado:
-      </label>
-      <div class="mt-1 flex rounded-md shadow-sm">
-        <input type="text" name="id-input" id="id-input"
-               class="flex-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-               placeholder="ID del Invitado">
-        <button type="submit"
-                class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          Buscar
-        </button>
-      </div>
-    </form>
-
-    <div id="results-container">
-    {/* Display results (only for single results now) */}
-    {invitadoData && (
-      <div class="mt-4">
-        <h2 class="text-lg font-semibold mb-2">Información del Invitado:</h2>
-        <p class="mb-1"><strong>Nombre:</strong> {invitadoData.nombre}</p>
-        <p class="mb-4">
-            <strong class="text-lg">Mesa Asignada:</strong>
-            <span class="text-3xl font-extrabold text-indigo-600">{invitadoData.mesa ?? '-'}</span>
-        </p>
-        <p class="mb-1"><strong>Pases Otorgados:</strong> {invitadoData.pases ?? '-'}</p>
-          {invitadoData.confirmacion &&(
-            <>
-                <p class="mb-1"><strong>Pases Confirmados:</strong> {invitadoData.confirmacion?.asistentesConfirmados ?? 0}</p>
-                <p class="mb-1">
-                  <strong>Asistencia:</strong>{" "}
-                  {invitadoData.confirmacion.asistencia ? "Sí" : "No"} {/* Corrected ternary operator */}
-                </p>
-            </>
-          )}
-
-      </div>
-    )}
-
-    {errorMessage && (
-      <div class="mt-4 text-red-600">
-        {errorMessage}
-      </div>
-    )}
+    <div class="space-y-4">
+        {/* Name Search Form */}
+        <form method="post" class="mb-4" id="name-form">
+            <input type="hidden" name="searchType" value="name">
+            <label for="name-input" class="block text-sm font-medium text-gray-700">
+                Buscar por Nombre:
+            </label>
+            <div class="mt-1 flex rounded-md shadow-sm">
+                <input type="text" name="name-input" id="name-input"
+                    class="flex-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Nombre del Invitado">
+                <button type="submit"
+                    class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Buscar
+                </button>
+            </div>
+        </form>
     </div>
   </div>
 
-<script client:load>
-    let html5QrcodeScanner; // Declare outside the functions
+  {/* Modal Overlay */}
+  <div id="modalOverlay" class="modal-overlay"></div>
 
-    function onScanSuccess(decodedText, decodedResult) {
-        // Handle on success condition with the decoded text or result.
-        console.log(`Scan result: ${decodedText}`, decodedResult);
-        document.getElementById('qr-result').value = decodedText;
-        document.getElementById('qr-form').submit();
-        html5QrcodeScanner.clear(); // Stop scanning after a successful scan.
+  {/* Modal Container */}
+  <div id="modalContainer" class="modal-container">
+      <div class="bg-white rounded-lg shadow-xl">
+          <div class="p-6">
+              <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-bold text-gray-900">Información del Invitado</h2>
+                  <button data-close-modal class="text-gray-400 hover:text-gray-500">
+                      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                  </button>
+              </div>
+              <div id="results-container">
+                  {/* Display results */}
+                  {invitadoData && !Array.isArray(invitadoData) && (
+                      <div class="space-y-6 text-center">
+                          <p class="text-2xl"><strong>Nombre:</strong> {invitadoData.nombre}</p>
+                          <div class="bg-gray-50 p-6 rounded-lg">
+                              <strong class="text-xl block mb-2">Mesa Asignada:</strong>
+                              <span class="text-5xl font-extrabold text-indigo-600">{invitadoData.mesa ?? '-'}</span>
+                          </div>
+                          <p class="text-xl"><strong>Pases Otorgados:</strong> {invitadoData.pases ?? '-'}</p>
+                          {invitadoData.confirmacion && (
+                              <div class="bg-gray-50 p-6 rounded-lg space-y-3">
+                                  <p class="text-xl">
+                                      <strong>Pases Confirmados:</strong> {invitadoData.confirmacion?.asistentes ?? 0}
+                                  </p>
+                                  <p class="text-xl">
+                                      <strong>Asistencia:</strong>{" "}
+                                      <span class={`font-bold ${invitadoData.confirmacion.asistencia ? "text-green-600" : "text-red-600"}`}>
+                                          {invitadoData.confirmacion.asistencia ? "Sí Asistirá" : "No Asistirá"}
+                                      </span>
+                                  </p>
+                              </div>
+                          )}
+                      </div>
+                  )}
+
+                  {/* Display multiple results */}
+                  {invitadoData && Array.isArray(invitadoData) && (
+                      <div class="space-y-6">
+                          <h3 class="text-xl font-medium text-gray-900 text-center">Resultados Encontrados:</h3>
+                          {invitadoData.map((invitado) => (
+                              <div class="p-6 border rounded-lg bg-gray-50 text-center">
+                                  <p class="text-xl mb-3"><strong>Nombre:</strong> {invitado.nombre}</p>
+                                  <div class="mb-4">
+                                      <strong class="text-lg block mb-1">Mesa:</strong>
+                                      <span class="text-4xl font-bold text-indigo-600">{invitado.mesa ?? '-'}</span>
+                                  </div>
+                                  <p class="text-lg mb-3"><strong>Pases Otorgados:</strong> {invitado.pases ?? '-'}</p>
+                                  {invitado.confirmacion && (
+                                      <div class="space-y-2">
+                                          <p class="text-lg"><strong>Pases Confirmados:</strong> {invitado.confirmacion?.asistentes ?? 0}</p>
+                                          <p class="text-lg">
+                                              <strong>Asistencia:</strong>{" "}
+                                              <span class={`font-bold ${invitado.confirmacion.asistencia ? "text-green-600" : "text-red-600"}`}>
+                                                  {invitado.confirmacion.asistencia ? "Sí Asistirá" : "No Asistirá"}
+                                              </span>
+                                          </p>
+                                      </div>
+                                  )}
+                                  <p class="text-sm text-gray-500 mt-4">ID: {invitado.id}</p>
+                              </div>
+                          ))}
+                      </div>
+                  )}
+
+                  {errorMessage && (
+                      <div class="bg-red-50 border-l-4 border-red-400 p-4">
+                          <div class="flex">
+                              <div class="flex-shrink-0">
+                                  <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                  </svg>
+                              </div>
+                              <div class="ml-3">
+                                  <p class="text-sm text-red-700">{errorMessage}</p>
+                              </div>
+                          </div>
+                      </div>
+                  )}
+              </div>
+          </div>
+      </div>
+  </div>
+
+<script>
+    let html5QrcodeScanner;
+    let isScanning = false;
+
+    function showModal() {
+        document.getElementById('modalOverlay').classList.add('modal-open');
+        document.getElementById('modalContainer').classList.add('modal-open');
     }
 
-    function onScanError(errorMessage) {
-        // handle on error condition, with error message
-        //console.warn(`QR error = ${errorMessage}`); // Uncomment for debugging
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('modal-open');
+        document.getElementById('modalContainer').classList.remove('modal-open');
+        isScanning = true; // Reactivar el escaneo cuando se cierra el modal
     }
 
-    // Initialize the scanner *only once* when the script loads:
-    function initializeScanner() {
-        if(!html5QrcodeScanner) { // Check if it's already initialized
-            html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: {width: 250, height: 250}, aspectRatio: 1.0 });
-            html5QrcodeScanner.render(onScanSuccess, onScanError);
-        }
-    }
-    initializeScanner(); // Call the initialization function
-
-
-    const qrForm = document.getElementById('qr-form');
-    const idForm = document.getElementById('id-form'); // Get the ID form
-
-
-    async function handleSubmit(event) {
-        event.preventDefault();
-        console.log("handleSubmit called");
-
-        const form = event.currentTarget;
-        const data = new FormData(form);
-
-        console.log("Form data:", data);
-        for (let pair of data.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
-        }
-
+    async function startScanner() {
         try {
-          const response = await fetch(form.action, {
-            method: form.method,
-            body: data,
-          });
+            const html5QrCode = new Html5Qrcode("reader");
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+            };
+
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length) {
+                const camera = cameras.find(c => c.label.toLowerCase().includes('back')) || cameras[0];
+                
+                await html5QrCode.start(
+                    camera.id,
+                    config,
+                    onScanSuccess,
+                    onScanError
+                );
+                
+                isScanning = true;
+                html5QrcodeScanner = html5QrCode;
+            }
+        } catch (err) {
+            console.error("Error starting scanner:", err);
+            if (html5QrcodeScanner) {
+                await html5QrcodeScanner.clear();
+            }
+            setTimeout(startScanner, 1000);
+        }
+    }
+
+    async function onScanSuccess(decodedText, decodedResult) {
+        if (!isScanning) return;
+        
+        isScanning = false;
+        console.log(`Scan result: ${decodedText}`, decodedResult);
+        
+        document.getElementById('qr-result').value = decodedText;
+        const formData = new FormData(document.getElementById('qr-form'));
+        
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            });
 
             if (response.ok) {
-              // Parse the response as text
-              const html = await response.text();
-
-              // Extract the relevant parts from the HTML response
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(html, 'text/html');
-
-              // Update the relevant parts of the current page
-              const newDataElement = doc.querySelector('#results-container');
-              if (newDataElement) {
-                document.querySelector('#results-container').innerHTML = newDataElement.innerHTML;
-              }
-
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newDataElement = doc.querySelector('#results-container');
+                if (newDataElement) {
+                    document.querySelector('#results-container').innerHTML = newDataElement.innerHTML;
+                    showModal(); // Mostrar el modal con los resultados
+                }
             } else {
                 console.error("Server error:", response.status);
                 alert("Hubo un error al procesar tu solicitud.");
+                isScanning = true;
             }
         } catch (error) {
             console.error("Network error:", error);
             alert("Hubo un error de red. Verifica tu conexión.");
+            isScanning = true;
         }
     }
 
-    if (qrForm) {
-        qrForm.addEventListener('submit', handleSubmit);
-    }
-    if (idForm) { // Add event listener to the ID form
-        idForm.addEventListener('submit', handleSubmit);
+    function onScanError(errorMessage) {
+        if (!errorMessage.includes('NotFound')) {
+            console.error("Scan error:", errorMessage);
+        }
     }
 
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        startScanner();
+        
+        // Click fuera del modal para cerrar
+        document.getElementById('modalOverlay')?.addEventListener('click', closeModal);
+        
+        // Prevenir que clicks dentro del modal lo cierren
+        document.getElementById('modalContainer')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Agregar evento al botón de cerrar
+        const closeButton = document.querySelector('[data-close-modal]');
+        closeButton?.addEventListener('click', closeModal);
+    });
+
+    // Manejar el formulario de búsqueda por nombre
+    const nameForm = document.getElementById('name-form');
+    if (nameForm) {
+        nameForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget as HTMLFormElement;
+            const data = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: data,
+                });
+
+                if (response.ok) {
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newDataElement = doc.querySelector('#results-container');
+                    if (newDataElement) {
+                        document.querySelector('#results-container').innerHTML = newDataElement.innerHTML;
+                        showModal(); // Mostrar el modal con los resultados
+                    }
+                } else {
+                    console.error("Server error:", response.status);
+                    alert("Hubo un error al procesar tu solicitud.");
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+                alert("Hubo un error de red. Verifica tu conexión.");
+            }
+        });
+    }
 </script>
 
 </body>

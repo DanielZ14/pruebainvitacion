@@ -1,24 +1,130 @@
-<!doctype html>
-<html lang="en">
-<head>
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{Astro.props.title}</title> {/* Use a prop for the title */}
-    <link rel="stylesheet" href="/styles/global.css"> {/* Correct CSS link */}
-</head>
-<body>
-   
-    <slot /> {/* Where page content goes */}
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <meta name="description" content="Invitación a nuestra boda" />
+  </head>
+  <body>
+    <slot />
+  </body>
 </html>
 
-<style>
-    html,
-    body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-    }
+<style is:global>
+  :root {
+    --font-serif: 'Playfair Display', serif;
+    --color-primary: #9c8354;
+    --color-text: #333333;
+    --color-text-light: #666666;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animaciones al hacer scroll */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+  }
+
+  .fade-down {
+    opacity: 0;
+    transform: translateY(-30px);
+    transition: all 0.8s ease-out;
+  }
+
+  .fade-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: all 0.8s ease-out;
+  }
+
+  .fade-right {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: all 0.8s ease-out;
+  }
+
+  .fade-in {
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+  }
+
+  .scale-up {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.8s ease-out;
+  }
+
+  /* Clase que se agrega cuando el elemento es visible */
+  .animate {
+    opacity: 1;
+    transform: translate(0) scale(1);
+  }
+
+  /* Delays para animaciones secuenciales */
+  .delay-1 { transition-delay: 0.2s; }
+  .delay-2 { transition-delay: 0.4s; }
+  .delay-3 { transition-delay: 0.6s; }
+  .delay-4 { transition-delay: 0.8s; }
 </style>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Configuración del Intersection Observer
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+
+    // Callback cuando un elemento es visible
+    const callback = (entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate');
+          // Opcional: dejar de observar después de animar
+          // observer.unobserve(entry.target);
+        }
+      });
+    };
+
+    // Crear el observer
+    const observer = new IntersectionObserver(callback, options);
+
+    // Observar todos los elementos con clases de animación
+    const animatedElements = document.querySelectorAll(
+      '.fade-up, .fade-down, .fade-left, .fade-right, .fade-in, .scale-up'
+    );
+
+    animatedElements.forEach(element => {
+      observer.observe(element);
+    });
+  });
+</script>

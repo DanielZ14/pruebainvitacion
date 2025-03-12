@@ -1,0 +1,72 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { db } from "../lib/firebase.js";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+
+interface Deseo {
+  nombre: string;
+  mensaje: string;
+  fecha: Date;
+  idInvitado?: string;
+}
+
+let deseos: Deseo[] = [];
+
+try {
+  const deseosRef = collection(db, "deseos");
+  const q = query(deseosRef, orderBy("fecha", "desc"));
+  const querySnapshot = await getDocs(q);
+  deseos = querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      nombre: data.nombre,
+      mensaje: data.mensaje,
+      fecha: data.fecha.toDate(), // Convertir Timestamp a Date
+      idInvitado: data.idInvitado
+    };
+  });
+} catch (error) {
+  console.error("Error al cargar los deseos:", error);
+}
+---
+
+<Layout title="Libro de Deseos - Nuestra Boda">
+  <main class="contenedor">
+    <h1 class="text-4xl font-bold text-center my-8">Libro de Deseos</h1>
+    
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="space-y-6">
+          {deseos.map((deseo) => (
+            <div class="border-b pb-4 last:border-b-0">
+              <p class="font-medium text-lg">{deseo.nombre}</p>
+              <p class="text-gray-600 mt-2">{deseo.mensaje}</p>
+              <p class="text-sm text-gray-500 mt-1">
+                {deseo.fecha.toLocaleDateString('es-MX', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+            </div>
+          ))}
+          
+          {deseos.length === 0 && (
+            <p class="text-center text-gray-600">
+              Aún no hay deseos compartidos.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .contenedor {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+</style> 

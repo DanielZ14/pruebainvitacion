@@ -15,34 +15,26 @@
       background-color: #e191a8;
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0% 50%);
       z-index: 1;
-       @media (min-width: 768px) {
-        clip-path: polygon(0 0, 100% 0, 75% 100%, 0 100%, 0% 50%);
-        transition: clip-path 0.5s ease-out; /* Smooth transition */
-      }
-      transition: clip-path 0.5s ease-out; /* Smooth transition */
+      transition: all 0.5s ease-out;
   `}></div>
 
   {/* Right half of the envelope */}
   <div id="rightHalf" class="absolute top-0 right-0 w-1/2 h-full" style={`
       background-color: #e191a8;
       clip-path: polygon(0 0, 100% 0, 100% 50%, 0% 100%, 0 100%);
-       @media (min-width: 768px) {
-       clip-path: polygon(25% 0, 100% 0, 100% 50%, 100% 100%, 0 100%);
-       transition: clip-path 0.5s ease-out;  /* Smooth transition */
-      }
-      transition: clip-path 0.5s ease-out; /* Smooth transition */
+      transition: all 0.5s ease-out;
   `}></div>
 
-    <div class="relative z-50 flex items-center justify-center w-full h-full">
-        <img
-          src="/Logo.png"
-          alt="Logo"
-          width="200"
-          height="200"
-          class="max-w-[50vw] animate-pulse pointer-events-none"
-          data-tooltip="Copiado!"
-        />
-    </div>
+  <div class="relative z-50 flex items-center justify-center w-full h-full">
+    <img
+      src="/Logo.png"
+      alt="Logo"
+      width="200"
+      height="200"
+      class="max-w-[50vw] animate-pulse pointer-events-none"
+      data-tooltip="Copiado!"
+    />
+  </div>
 </div>
 
 <script is:inline>
@@ -51,35 +43,46 @@
     const main = document.getElementById('mainContent');
     const leftHalf = document.getElementById('leftHalf');
     const rightHalf = document.getElementById('rightHalf');
-    let isOpen = false; // Keep track of the envelope state
 
     const hideSplash = () => {
-        //Animate envelope open
-        if(!isOpen){
-            isOpen = true;
-            //Mobile
-             leftHalf.style.clipPath = 'polygon(0 0, 0% 0, 0% 100%, 0 100%, 0% 50%)';
-             rightHalf.style.clipPath = 'polygon(100% 0, 100% 0, 100% 50%, 100% 100%, 100% 100%)';
-
-            //Desktop
-            if (window.innerWidth >= 768) {
-                leftHalf.style.clipPath = 'polygon(0 0, 0% 0, 0% 100%, 0 100%, 0% 50%)';
-                rightHalf.style.clipPath = 'polygon(100% 0, 100% 0, 100% 50%, 100% 100%, 100% 100%)';
-            }
-            return; // Important:  Exit *before* fading out
-        }
-
+      // Animar todo junto
+      leftHalf.style.clipPath = 'polygon(0 0, 0% 0, 0% 100%, 0 100%, 0% 50%)';
+      rightHalf.style.clipPath = 'polygon(100% 0, 100% 0, 100% 50%, 100% 100%, 100% 100%)';
       splash.style.animation = 'fadeOut 0.9s ease-out forwards';
+      
       setTimeout(() => {
         splash.style.display = 'none';
         main.classList.remove('hidden');
       }, 650);
     };
 
-
     if (splash) {
-        splash.addEventListener('click', hideSplash);
-        setTimeout(hideSplash, 9000);  // Auto-hide after 9 seconds
+      splash.addEventListener('click', hideSplash);
+      setTimeout(hideSplash, 9000); // Auto-hide after 9 seconds
     }
   });
 </script>
+
+<style>
+  @keyframes fadeOut {
+    to { 
+      opacity: 0;
+      transform: scale(1.9);
+      background-color: rgba(255, 255, 255, 0);
+    }
+  }
+
+  #splashScreen {
+    transition: all 0.6s;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(0.95); }
+  }
+</style>

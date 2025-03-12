@@ -1,11 +1,34 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import Splash from '../components/Splash.astro';
+
+// Estos datos podrían venir de una base de datos o CMS
+const bodaData = {
+  nombreNovia: "Daniela",
+  nombreNovio: "Antonio",
+  fecha: "20 de Julio de 2024",
+  padresNovia: {
+    madre: "María González",
+    padre: "José Pérez"
+  },
+  padresNovio: {
+    madre: "Ana López",
+    padre: "Juan Rodríguez"
+  }
+};
 
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Daniela & Antonio - Nuestra Boda">
+  <Splash 
+    nombreNovia={bodaData.nombreNovia}
+    nombreNovio={bodaData.nombreNovio}
+    fecha={bodaData.fecha}
+    padresNovia={bodaData.padresNovia}
+    padresNovio={bodaData.padresNovio}
+  />
+  
+  <!-- Aquí puedes agregar más secciones de la invitación -->
 </Layout>

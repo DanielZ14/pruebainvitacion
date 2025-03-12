@@ -1,0 +1,246 @@
+---
+interface Props {
+  nombreNovia: string;
+  nombreNovio: string;
+  fecha: string;
+  padresNovia: {
+    madre: string;
+    padre: string;
+  };
+  padresNovio: {
+    madre: string;
+    padre: string;
+  };
+}
+
+const { nombreNovia, nombreNovio, fecha, padresNovia, padresNovio } = Astro.props;
+---
+
+<div class="splash-container">
+  <div class="content-wrapper">
+    <div class="header-text animate-fade-in">
+      <p class="invitation-text">Te invitamos a nuestra boda</p>
+    </div>
+
+    <div class="names-container animate-slide-up">
+      <h1 class="nombre-novia">{nombreNovia}</h1>
+      <div class="ampersand">&</div>
+      <h1 class="nombre-novio">{nombreNovio}</h1>
+    </div>
+
+    <div class="message-container animate-fade-in">
+      <h2 class="message">El día más importante de nuestras vidas ha llegado</h2>
+      <h3 class="highlight">¡Nos Casamos!</h3>
+      <p class="date">{fecha}</p>
+    </div>
+
+    <div class="parents-section animate-fade-in">
+      <h3 class="parents-header">Con la bendición de Dios y de nuestros padres</h3>
+      
+      <div class="parents-names">
+        <div class="parents-group">
+          <p>{padresNovia.madre}</p>
+          <p>{padresNovia.padre}</p>
+        </div>
+        
+        <div class="parents-group">
+          <p>{padresNovio.madre}</p>
+          <p>{padresNovio.padre}</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="final-message animate-fade-in">
+      Compartir estos momentos con ustedes los hace inolvidables.
+    </p>
+  </div>
+</div>
+
+<style>
+  .splash-container {
+    min-height: 100vh;
+    background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
+                url('/images/background.jpg') center/cover no-repeat fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .content-wrapper {
+    max-width: 800px;
+    margin: auto;
+  }
+
+  .header-text {
+    margin-bottom: 3rem;
+  }
+
+  .invitation-text {
+    font-size: 1.5rem;
+    color: #666;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 2rem;
+  }
+
+  .names-container {
+    margin: 4rem 0;
+  }
+
+  .nombre-novia,
+  .nombre-novio {
+    font-size: 4rem;
+    color: #333;
+    font-family: 'Playfair Display', serif;
+    margin: 0.5rem 0;
+    font-weight: 700;
+  }
+
+  .ampersand {
+    font-size: 5rem;
+    color: #9c8354;
+    font-family: 'Playfair Display', serif;
+    margin: 1rem 0;
+  }
+
+  .message-container {
+    margin: 3rem 0;
+  }
+
+  .message {
+    font-size: 1.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+  }
+
+  .highlight {
+    font-size: 2.5rem;
+    color: #9c8354;
+    margin: 1.5rem 0;
+  }
+
+  .date {
+    font-size: 2rem;
+    color: #333;
+    margin: 1.5rem 0;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .parents-section {
+    margin: 4rem 0;
+    padding: 2rem 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .parents-header {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  .parents-names {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .parents-group {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .parents-group p {
+    font-size: 1.2rem;
+    color: #333;
+    margin: 0.5rem 0;
+  }
+
+  .final-message {
+    font-size: 1.3rem;
+    color: #666;
+    font-style: italic;
+    margin: 3rem 0;
+  }
+
+  /* Animaciones */
+  .animate-fade-in {
+    animation: fadeIn 1.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 1.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .nombre-novia,
+    .nombre-novio {
+      font-size: 3rem;
+    }
+
+    .ampersand {
+      font-size: 4rem;
+    }
+
+    .message {
+      font-size: 1.5rem;
+    }
+
+    .highlight {
+      font-size: 2rem;
+    }
+
+    .date {
+      font-size: 1.8rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nombre-novia,
+    .nombre-novio {
+      font-size: 2.5rem;
+    }
+
+    .ampersand {
+      font-size: 3rem;
+    }
+
+    .parents-group {
+      min-width: 200px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const elements = document.querySelectorAll<HTMLElement>('.animate-fade-in, .animate-slide-up');
+    elements.forEach((el, index) => {
+      if (el instanceof HTMLElement) {
+        el.style.animationDelay = `${index * 0.2}s`;
+      }
+    });
+  });
+</script> 

@@ -1,0 +1,75 @@
+---
+const { ceremonia, recepcion } = Astro.props;
+---
+
+<section class="py-16 px-4 bg-gray-50">
+  <div class="container mx-auto max-w-4xl">
+    <h2 class="text-4xl font-bold text-center mb-12">Itinerario</h2>
+    
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Ceremonia -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="text-4xl mb-4 text-center">⛪️</div>
+        <h3 class="text-2xl font-bold mb-4 text-center">Ceremonia Religiosa</h3>
+        <div class="space-y-3">
+          <p class="text-gray-600">
+            <span class="font-semibold">Fecha:</span> {ceremonia.fecha}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Hora:</span> {ceremonia.hora}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Lugar:</span> {ceremonia.lugar}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Dirección:</span> {ceremonia.direccion}
+          </p>
+          {ceremonia.maps && (
+            <a 
+              href={ceremonia.maps}
+              target="_blank"
+              class="inline-flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <span>Ver en Google Maps</span>
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Recepción -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="text-4xl mb-4 text-center">🎉</div>
+        <h3 class="text-2xl font-bold mb-4 text-center">Recepción</h3>
+        <div class="space-y-3">
+          <p class="text-gray-600">
+            <span class="font-semibold">Fecha:</span> {recepcion.fecha}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Hora:</span> {recepcion.hora}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Lugar:</span> {recepcion.lugar}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Dirección:</span> {recepcion.direccion}
+          </p>
+          {recepcion.maps && (
+            <a 
+              href={recepcion.maps}
+              target="_blank"
+              class="inline-flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <span>Ver en Google Maps</span>
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</section> 

@@ -1,99 +1,127 @@
 ---
 // src/components/LibroDeDeseos.astro
-import { db } from '../lib/firebase'; // Importa la instancia de Firestore
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
+import { app } from "../firebase/client";
 
 interface Props {
   idInvitado: string;
   nombreInvitado: string;
 }
 
-const { idInvitado, nombreInvitado } = Astro.props as Props;
+const { idInvitado, nombreInvitado } = Astro.props;
+const db = getFirestore(app);
+let formMessage = "";
+let deseoEnviado = false;
 
-let mensaje = '';
-let error = '';
-let enviado = false;
+// Verificar si ya existe un deseo del invitado
+try {
+  const deseoRef = doc(db, "deseos", idInvitado);
+  const deseoSnap = await getDoc(deseoRef);
+  if (deseoSnap.exists()) {
+    deseoEnviado = true;
+    formMessage = "¡Gracias por compartir tus deseos!";
+  }
+} catch (error) {
+  console.error("Error al verificar deseo existente:", error);
+}
 
-if (Astro.request.method === "POST") {
-  const formData = await Astro.request.formData();
-  const deseo = formData.get('deseo');
+if (Astro.request.method === "POST" && !deseoEnviado) {
+  try {
+    const formData = await Astro.request.formData();
+    const mensaje = formData.get("mensaje")?.toString().trim();
 
-  if (deseo && typeof deseo === 'string' && deseo.trim() !== '') {
-    try {
-      const docRef = doc(db, "deseos", idInvitado); // Usa el ID del invitado como ID del documento
-      await setDoc(docRef, {
-        idInvitado: idInvitado,
-        nombreInvitado: nombreInvitado,
-        deseo: deseo,
-        fecha: serverTimestamp(), // Usa serverTimestamp() para la fecha y hora del servidor
-      });
-      enviado = true;
-      mensaje = '¡Gracias por tus deseos!';
-    } catch (e) {
-      error = 'Hubo un error al enviar tus deseos. Intenta de nuevo.';
-      console.error("Error adding document: ", e);
+    if (!mensaje) {
+      formMessage = "Por favor, completa todos los campos.";
+    } else {
+      if (!idInvitado) {
+        formMessage = "Error: No se pudo identificar al invitado.";
+        console.error("ID de invitado no proporcionado");
+      } else {
+        const nuevoDeseo = {
+          nombre: nombreInvitado || "Invitado",
+          mensaje,
+          fecha: Timestamp.now(),
+          idInvitado: idInvitado
+        };
+
+        await setDoc(doc(db, "deseos", idInvitado), nuevoDeseo);
+        formMessage = "¡Gracias por compartir tus deseos!";
+        deseoEnviado = true;
+      }
     }
-  } else {
-    error = 'Por favor, escribe un deseo.';
+  } catch (error) {
+    console.error("Error al guardar el deseo:", error);
+    formMessage = "Error al guardar el deseo. Por favor, intenta de nuevo.";
   }
 }
 
 ---
 
-<div class="libro-de-deseos">
-  {enviado ? (
-    <p class="mensaje-exito">{mensaje}</p>
-  ) : (
-    <>
-      <h3>Deja tus deseos para los novios</h3>
-      {error && <p class="mensaje-error">{error}</p>}
-      <form method="POST">
-        <textarea name="deseo" placeholder="Escribe tus deseos aquí..." required></textarea>
-        <button type="submit">Enviar</button>
-      </form>
-    </>
-  )}
-</div>
+<section class="py-16 px-4 bg-white">
+  <div class="container mx-auto max-w-4xl">
+    <h2 class="text-4xl font-bold text-center mb-12">Libro de Deseos</h2>
+
+    <div class="max-w-lg mx-auto">
+      {!deseoEnviado ? (
+        <div class="bg-gray-50 rounded-lg shadow-lg p-8">
+          <h3 class="text-2xl font-bold mb-6 text-center">Comparte tus Deseos</h3>
+          <form method="POST" class="space-y-6">
+            <input type="hidden" name="idInvitado" value={idInvitado} />
+            <div>
+              <label for="mensaje" class="block text-gray-700 font-medium mb-2">
+                Tu Mensaje
+              </label>
+              <textarea
+                id="mensaje"
+                name="mensaje"
+                required
+                rows="4"
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-pink-500 focus:ring focus:ring-pink-500 focus:ring-opacity-50"
+                placeholder="Comparte tus deseos para los novios..."
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 transition-colors font-semibold"
+            >
+              Enviar Deseos
+            </button>
+
+            {formMessage && formMessage.includes("Error") && (
+              <p class="text-center font-medium text-red-600">
+                {formMessage}
+              </p>
+            )}
+          </form>
+        </div>
+      ) : (
+        <div class="bg-gray-50 rounded-lg shadow-lg p-8 text-center">
+          <h3 class="text-2xl font-bold mb-4">¡Gracias por compartir tus deseos!</h3>
+          <p class="text-gray-600">Tus palabras significan mucho para nosotros.</p>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
 
 <style>
-  .libro-de-deseos {
-    max-w: 600px; /* Ajusta según sea necesario */
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+  /* Estilizar la barra de desplazamiento */
+  .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #E5E7EB transparent;
   }
 
-  textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    resize: vertical; /* Permite redimensionar verticalmente */
-    min-height: 100px; /* Altura mínima */
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
   }
 
-  button {
-    background-color: #007bff; /* Color de fondo (ejemplo) */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #0056b3;
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .mensaje-exito {
-    color: green;
-    margin-bottom: 10px;
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: #E5E7EB;
+    border-radius: 3px;
   }
-  .mensaje-error {
-    color: red;
-     margin-bottom: 10px;
-  }
-
 </style>

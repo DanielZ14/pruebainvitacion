@@ -1,31 +1,29 @@
 ---
 // src/components/VestimentaSection.astro
 ---
-<section id="vestimenta" class="py-10 sm:py-12 bg-gray-50"> {/* Ajuste padding vertical en pantallas pequeñas */}
-    <div class="container mx-auto px-4 text-center">
-      <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">Código de Vestimenta {/* Ajuste tamaño texto título */}</h2>
-      <p class="text-lg sm:text-xl text-gray-800 font-bold uppercase">Formal {/* Ajuste tamaño texto "Formal" */}</p>
-  
-      <div class="flex flex-col items-center space-y-6 justify-center mb-8 lg:flex-row lg:space-x-8 lg:space-y-0"> {/* Ajuste espacios y márgenes */}
-        {/* Hombre */}
-        <div class="flex flex-col items-center">
-          <div class="w-54 h-54 sm:w-82 sm:h-82 rounded-full bg-gray-100 flex items-center justify-center"> {/* Ajuste tamaño círculo */}
-            <img src="/hombreformal.png" alt="Hombre Formal" class="w-80 sm:w-80 h-auto" /> {/* Ajuste tamaño imagen */}
-          </div>
-          <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Hombre {/* Ajuste márgenes y texto */} </p>
-          <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Traje con corbata{/* Ajuste márgenes y texto */} </p>
+<section id="vestimenta" class="py-10 sm:py-12 bg-gray-50">
+  <div class="container mx-auto px-4 text-center">
+    <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">Código de Vestimenta</h2>
+    <p class="text-lg sm:text-xl text-gray-800 font-bold uppercase">Formal</p>
+
+    <div class="flex flex-col items-center space-y-6 justify-center mb-8 lg:flex-row lg:space-x-8 lg:space-y-0">
+      <div class="flex flex-col items-center">
+        <div class="w-54 h-54 sm:w-82 sm:h-82 rounded-full bg-gray-100 flex items-center justify-center">
+          <img src="/hombreformal.png" alt="Hombre Formal" class="w-80 sm:w-80 h-auto" />
         </div>
-  
-        {/* Mujer */}
-        <div class="flex flex-col items-center">
-          <div class="w-54 h-54 sm:w-82 sm:h-82 rounded-full bg-gray-200 flex items-center justify-center"> {/* Ajuste tamaño círculo */}
-            <img src="/mujerformal.png" alt="Mujer Formal" class="w-80 sm:w-80 h-auto" /> {/* Ajuste tamaño imagen */}
-          </div>
-          <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Mujer {/* Ajuste márgenes y texto */}</p>
-          <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Vestido largo (No blanco, no plata, no hueso, no beige) {/* Ajuste márgenes y texto */}</p>
-        </div>
+        <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Hombre</p>
+        <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Traje con corbata</p>
       </div>
-      <p class="text-lg sm:text-xl text-gray-800 font-bold uppercase">Respetuosamente {/* Ajuste tamaño texto "Formal" */}</p>
-        <p class="text-lg sm:text-xl text-gray-800 font-bold uppercase">NO NIÑOS {/* Ajuste tamaño texto "Formal" */}</p>
+
+      <div class="flex flex-col items-center">
+        <div class="w-54 h-54 sm:w-82 sm:h-82 rounded-full bg-gray-200 flex items-center justify-center">
+          <img src="/mujerformal.png" alt="Mujer Formal" class="w-80 sm:w-80 h-auto" />
+        </div>
+        <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Mujer</p>
+        <p class="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 font-medium">Vestido largo (No blanco, no plata, no hueso, no beige)</p>
+      </div>
     </div>
-  </section>
+    <p class="text-lg sm:text-xl text-gray-800 font-bold uppercase">Respetuosamente</p>
+    <p class="text-lg sm:text-xl text-gray-800 font-bold uppercase">NO NIÑOS</p>
+  </div>
+</section>
