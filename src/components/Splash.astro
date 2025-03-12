@@ -16,47 +16,147 @@ interface Props {
 const { nombreNovia, nombreNovio, fecha, padresNovia, padresNovio } = Astro.props;
 ---
 
-<div class="splash-container">
-  <div class="content-wrapper">
-    <div class="header-text animate-fade-in">
-      <p class="invitation-text">Te invitamos a nuestra boda</p>
-    </div>
-
-    <div class="names-container animate-slide-up">
-      <h1 class="nombre-novia">{nombreNovia}</h1>
-      <div class="ampersand">&</div>
-      <h1 class="nombre-novio">{nombreNovio}</h1>
-    </div>
-
-    <div class="message-container animate-fade-in">
-      <h2 class="message">El día más importante de nuestras vidas ha llegado</h2>
-      <h3 class="highlight">¡Nos Casamos!</h3>
-      <p class="date">{fecha}</p>
-    </div>
-
-    <div class="parents-section animate-fade-in">
-      <h3 class="parents-header">Con la bendición de Dios y de nuestros padres</h3>
-      
-      <div class="parents-names">
-        <div class="parents-group">
-          <p>{padresNovia.madre}</p>
-          <p>{padresNovia.padre}</p>
-        </div>
-        
-        <div class="parents-group">
-          <p>{padresNovio.madre}</p>
-          <p>{padresNovio.padre}</p>
-        </div>
-      </div>
-    </div>
-
-    <p class="final-message animate-fade-in">
-      Compartir estos momentos con ustedes los hace inolvidables.
-    </p>
+<!-- Pantalla de splash inicial -->
+<div id="splashScreen" class="splash-screen">
+  <div class="splash-content">
+    <h1 class="splash-title">Invitación de Boda</h1>
+    <div class="splash-loader"></div>
   </div>
 </div>
 
+<!-- Contenido principal que se mostrará después del splash -->
+<div id="mainContent" class="main-content hidden">
+  <div class="splash-container">
+    <div class="content-wrapper">
+      <div class="header-text animate-fade-in">
+        <p class="invitation-text">Te invitamos a nuestra boda</p>
+      </div>
+
+      <div class="names-container animate-slide-up">
+        <h1 class="nombre-novia">{nombreNovia}</h1>
+        <div class="ampersand">&</div>
+        <h1 class="nombre-novio">{nombreNovio}</h1>
+      </div>
+
+      <div class="message-container animate-fade-in">
+        <h2 class="message">El día más importante de nuestras vidas ha llegado</h2>
+        <h3 class="highlight">¡Nos Casamos!</h3>
+        <p class="date">{fecha}</p>
+      </div>
+
+      <div class="parents-section animate-fade-in">
+        <h3 class="parents-header">Con la bendición de Dios y de nuestros padres</h3>
+        
+        <div class="parents-names">
+          <div class="parents-group">
+            <p>{padresNovia.madre}</p>
+            <p>{padresNovia.padre}</p>
+          </div>
+          
+          <div class="parents-group">
+            <p>{padresNovio.madre}</p>
+            <p>{padresNovio.padre}</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="final-message animate-fade-in">
+        Compartir estos momentos con ustedes los hace inolvidables.
+      </p>
+      
+      <!-- Control de audio (oculto visualmente pero accesible) -->
+      <div class="audio-controls">
+        <button id="audioToggle" class="audio-toggle" aria-label="Reproducir/Pausar música">
+          <span id="audioIcon" class="audio-icon">🔊</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Elemento de audio oculto -->
+  <audio id="backgroundMusic" loop preload="auto">
+    <source src="/audio/audio.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+</div>
+
 <style>
+  /* Estilos del splash screen */
+  .splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.8s ease-out;
+  }
+
+  .splash-content {
+    text-align: center;
+  }
+
+  .splash-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: #9c8354;
+    margin-bottom: 2rem;
+  }
+
+  .splash-loader {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(156, 131, 84, 0.3);
+    border-radius: 50%;
+    border-top-color: #9c8354;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Ocultar el contenido principal inicialmente */
+  .hidden {
+    display: none;
+  }
+
+  /* Estilos para el control de audio */
+  .audio-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+  }
+
+  .audio-toggle {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #9c8354;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .audio-toggle:hover {
+    background-color: #9c8354;
+    color: white;
+  }
+
+  .audio-icon {
+    font-size: 1.2rem;
+  }
+
+  /* Estilos existentes */
   .splash-container {
     min-height: 100vh;
     background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
@@ -236,11 +336,79 @@ const { nombreNovia, nombreNovio, fecha, padresNovia, padresNovio } = Astro.prop
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const elements = document.querySelectorAll<HTMLElement>('.animate-fade-in, .animate-slide-up');
-    elements.forEach((el, index) => {
-      if (el instanceof HTMLElement) {
-        el.style.animationDelay = `${index * 0.2}s`;
+    // Referencias a los elementos del DOM
+    const splashScreen = document.getElementById('splashScreen');
+    const mainContent = document.getElementById('mainContent');
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const audioToggle = document.getElementById('audioToggle');
+    const audioIcon = document.getElementById('audioIcon');
+
+    // Flag para controlar si la música está en pausa
+    let isMusicPaused = false;
+
+    // Función para ocultar el splash y mostrar el contenido principal
+    function hideSplashAndShowContent() {
+      if (splashScreen && mainContent) {
+        // Animar la opacidad del splash antes de ocultarlo
+        splashScreen.style.opacity = '0';
+        
+        setTimeout(() => {
+          // Ocultar el splash y mostrar el contenido principal
+          splashScreen.style.display = 'none';
+          mainContent.classList.remove('hidden');
+          
+          // Intentar reproducir la música
+          playBackgroundMusic();
+          
+          // Aplicar las animaciones al contenido principal
+          const elements = document.querySelectorAll('.animate-fade-in, .animate-slide-up');
+          elements.forEach((el, index) => {
+            if (el instanceof HTMLElement) {
+              el.style.animationDelay = `${index * 0.2}s`;
+            }
+          });
+        }, 800); // Duración de la transición de opacidad
       }
-    });
+    }
+
+    // Función para reproducir la música de fondo
+    function playBackgroundMusic() {
+      if (backgroundMusic) {
+        const playPromise = backgroundMusic.play();
+        
+        // Manejar errores de reproducción (común en navegadores móviles)
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log('La reproducción automática fue bloqueada:', error);
+            isMusicPaused = true;
+            updateAudioIcon();
+          });
+        }
+      }
+    }
+
+    // Función para actualizar el icono del botón de audio
+    function updateAudioIcon() {
+      if (audioIcon) {
+        audioIcon.textContent = isMusicPaused ? '🔇' : '🔊';
+      }
+    }
+
+    // Mostrar el contenido principal después de 3 segundos
+    setTimeout(hideSplashAndShowContent, 3000);
+
+    // Control para reproducir/pausar la música
+    if (audioToggle && backgroundMusic) {
+      audioToggle.addEventListener('click', () => {
+        if (backgroundMusic.paused) {
+          backgroundMusic.play();
+          isMusicPaused = false;
+        } else {
+          backgroundMusic.pause();
+          isMusicPaused = true;
+        }
+        updateAudioIcon();
+      });
+    }
   });
-</script> 
+</script>

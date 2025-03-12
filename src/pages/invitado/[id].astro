@@ -85,7 +85,10 @@ const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invi
             <meta charset="UTF-8" />
         </head>
         <body>
+            <audio id="background-audio" src="/audio/audio.mp3" loop></audio>
             <Navbar />
+            <button id="play-audio" class="hidden">Play Audio</button>
+            <button id="toggle-audio" class="fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg">Pause</button>
             {loading ? (
                 <p>Cargando...</p>
             ) : error ? (
@@ -138,9 +141,47 @@ const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invi
                     
                     <TextSection />
 
-                    <LibroDeDeseos idInvitado={id || ''} nombreInvitado={invitado?.nombre || ''}/>
+                    <LibroDeDeseos idInvitado={id || ''} nombreInvitado={invitado?.nombre || ''}>
+                        {invitado && (
+                            <div class="avatar bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
+                                {invitado.nombre.split(' ').map(n => n[0]).join('')}
+                            </div>
+                        )}
+                    </LibroDeDeseos>
                 </>
             )}
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const audio = document.getElementById('background-audio') as HTMLAudioElement;
+                    const playButton = document.getElementById('play-audio');
+                    const toggleButton = document.getElementById('toggle-audio');
+
+                    function playAudio() {
+                        audio.play();
+                    }
+
+                    function toggleAudio() {
+                        if (audio.paused) {
+                            audio.play();
+                            toggleButton.textContent = 'Pause';
+                        } else {
+                            audio.pause();
+                            toggleButton.textContent = 'Play';
+                        }
+                    }
+
+                    playButton?.addEventListener('click', playAudio);
+                    toggleButton?.addEventListener('click', toggleAudio);
+
+                    // Wait for splash to disappear
+                    setTimeout(() => {
+                        audio.play().catch(() => {
+                            // If autoplay fails, show play button
+                            playButton?.classList.remove('hidden');
+                        });
+                    }, 3000); // Adjust time as needed
+                });
+            </script>
         </body>
     </html>
 </SplashScreen>
@@ -161,5 +202,10 @@ const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invi
     .section-container {
       margin: 2rem auto;
     }
+  }
+
+  #toggle-audio {
+    background-color: rgba(128, 128, 128, 0.7); /* Gray translucent */
+    z-index: 1000; /* Ensure it is on top */
   }
 </style>

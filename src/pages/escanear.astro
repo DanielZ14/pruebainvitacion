@@ -304,6 +304,11 @@ if (Astro.request.method === "POST") {
         isScanning = true; // Reactivar el escaneo cuando se cierra el modal
     }
 
+    function startBackgroundMusic() {
+        const audio = document.getElementById('background-audio');
+        audio?.play();
+    }
+
     async function startScanner() {
         try {
             const html5QrCode = new Html5Qrcode("reader");
@@ -327,6 +332,7 @@ if (Astro.request.method === "POST") {
                 
                 isScanning = true;
                 html5QrcodeScanner = html5QrCode;
+                startBackgroundMusic(); // Iniciar música de fondo
             }
         } catch (err) {
             console.error("Error starting scanner:", err);
