@@ -3,7 +3,7 @@
 const { invitado } = Astro.props;
 ---
 
-<section class="relative min-h-[100vh] flex items-center justify-center">
+<section id="hero" class="relative min-h-[100vh] flex items-center justify-center">
     <div class="absolute inset-0 z-0">
       <img 
         src="/hero.png" 
@@ -15,8 +15,10 @@ const { invitado } = Astro.props;
     </div>
   
     <div class="relative z-10 text-center text-white space-y-6 px-4">
-      <h1 class="text-5xl md:text-7xl font-bold font-cursive tracking-wide fade-down">
-        Silvia & Christian
+      <h1 class="text-5xl md:text-6xl font-bold font-cursive tracking-wide fade-down">
+        <div>Silvia</div>
+        <div class="text-4xl">&</div>
+        <div>Christian</div>
       </h1>
       <p class="text-xl md:text-2xl font-light italic fade-up delay-1">
         Te invitamos a nuestra boda:
