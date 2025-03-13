@@ -4,39 +4,59 @@ const { invitado } = Astro.props;
 ---
 
 <section id="hero" class="relative min-h-[100vh] flex items-center justify-center">
-    <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 z-0" style="clip-path: polygon(0 0, 100% 0, 100% 95%, 50% 100%, 0 95%);">
+      <img 
+      src="/hero.png" 
+      alt="Fondo hero" 
+      class="w-full h-full object-cover object-center"
+      loading="eager"
+     class=" -bottom-48 blur-3xl -z-40"
+    />
       <img 
         src="/hero.png" 
         alt="Fondo hero" 
         class="w-full h-full object-cover object-center"
         loading="eager"
       />
+      
       <div class="absolute inset-0 bg-black/40"></div>
     </div>
+ 
   
     <div class="relative z-10 text-center text-white space-y-6 px-4">
-      <h1 class="text-5xl md:text-6xl font-bold font-cursive tracking-wide fade-down">
-        <div>Silvia</div>
-        <div class="text-4xl">&</div>
-        <div>Christian</div>
-      </h1>
-      <p class="text-xl md:text-2xl font-light italic fade-up delay-1">
-        Te invitamos a nuestra boda:
-      </p>
+      <img src="/logoh.png" alt="Logo" class="mx-auto mb-8 animate-fade-up" style="width: 1500px; height: auto;" />
       
-      {invitado && (
-        <div class="fade-up delay-2">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-2">
-             <span class="text-gold">{invitado.nombre}</span>
-          </h2>
-        </div>
-      )}
     </div>
 </section>
 
+<div class="text-center mt-8 space-y-8 scroll-up">
+  <img src="/flor.png" alt="Flor" class="mx-auto mb-4 animate-spin-on-scroll" style="width: 200px; height: auto; transform: scaleX(-1);" />
+  <h2 class="text-2xl font-cursive">Apreciable</h2>
+  <h2 class="text-4xl md:text-6xl font-semibold mb-2">
+    <span class="text-gold">{invitado.nombre}</span>
+  </h2>
+  <p class="text-lg mt-8">Para nosotros sería un honor contar con tu presencia en este día tan especial en donde celebraremos nuestra unión.</p>
+  <img src="/flor2.png" alt="Flor" class="mx-auto mb-4 " style="width: 200px; height: auto;" />
+</div>
+
+<script is:inline>
+  window.addEventListener('scroll', () => {
+    const flowers = document.querySelectorAll('.animate-spin-on-scroll');
+    flowers.forEach(flower => {
+      const rect = flower.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const offset = rect.top + scrollTop;
+      const rotation = (window.scrollY - offset) / 10;
+      flower.style.transform = `rotate(${rotation}deg)`;
+    });
+  });
+</script>
+
 <style>
     /* Tus estilos existentes */
-    .font-cursive { font-family: 'Great Vibes', cursive; }
+    .font-cursive { font-family: 'Dancing Script', cursive; }
+    .font-bold { font-family: 'Playfair Display', serif; font-weight: 700; }
+    .text-lg { font-family: 'Playfair Display', serif; font-size: 1.125rem; }
     
     @keyframes fade-up {
       from { opacity: 0; transform: translateY(20px); }
@@ -47,4 +67,26 @@ const { invitado } = Astro.props;
     .animate-delay-200 { animation-delay: 200ms; }
     .animate-delay-400 { animation-delay: 400ms; }
     .text-gold { color: #D4AF37; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
+
+    /* Estilo para el corte triangular */
+    #hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background: inherit;
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+
+    .animate-spin-on-scroll {
+      transition: transform 0.5s ease-in-out;
+    }
+
+    /* New styles for scroll effect */
+    .scroll-up {
+      position: relative;
+      transition: transform 0.5s ease-in-out;
+    }
 </style>
