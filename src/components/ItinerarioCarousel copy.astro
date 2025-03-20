@@ -1,0 +1,137 @@
+---
+// src/components/ItinerarioCarousel.astro
+---
+
+<div class="py-16 px-4 bg-pink-50">
+    <div class="container mx-auto max-w-4xl">
+      <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 font-cursive">
+        Nuestro Itinerario
+      </h2>
+  
+      <!-- Carrusel -->
+      <div class="relative group">
+        <!-- Contenedor de slides -->
+        <div id="slides-container" class="flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
+          <!-- Slide 1 - Ceremonia Religiosa -->
+          <div class="min-w-full snap-center px-4">
+            <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <h3 class="text-2xl text-pink-600 font-semibold mb-4">Ceremonia Religiosa</h3>
+              <div class="flex justify-center mb-4">
+                <img 
+                  src="/Agustin.jpeg" 
+                  alt="Ceremonia"
+                  class="w-32 h-32 rounded-full object-cover border-4 border-pink-100"
+                />
+              </div>
+              <div class="text-4xl font-bold text-gray-800 mb-6">5:00 PM</div>
+              <p class="text-gray-600 mb-4 font-semibold">Templo de San Agustin</p>
+              <p class="text-gray-600 mb-4 font-light">Av. Universidad sin número esquina Morelos, Zona Centro, C.P. 78000</p>
+              <button 
+                onclick="window.open('https://maps.app.goo.gl/NGL51TdinbbegyyL6', '_blank')"
+                class="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition-colors"
+              >
+                Ver Mapa
+              </button>
+            </div>
+          </div>
+  
+          <!-- Slide 2 - Recepción Civil -->
+          <div class="min-w-full snap-center px-4">
+            <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <h3 class="text-2xl text-pink-600 font-semibold mb-4">Recepción & Boda Civil</h3>
+              <div class="flex justify-center mb-4">
+              <img 
+              src="/Libanes.jpg" 
+              alt="Ceremonia"
+              class="w-32 h-32 rounded-full object-cover border-4 border-pink-100"
+            />
+          </div>
+              <div class="text-4xl font-bold text-gray-800 mb-6">7:00 - 8:00 PM</div>
+              <p class="text-gray-600 mb-4 font-semibold">Salón Balbeek (Club Libanés Potosino)</p>
+              <p class="text-gray-600 mb-4 font-light">Av. Cordillera de los Himalaya, 1000 Col. Lomas 4ta. Sección 78216 San Luis Potosí S.L.P.</p>
+              <button 
+                onclick="window.open('https://maps.app.goo.gl/PemXg9mdLZSBxnmE7', '_blank')"
+                class="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition-colors"
+              >
+                Ver Mapa
+              </button>
+            </div>
+          </div>
+  
+          <!-- Slide 3 - Baile -->
+          <div class="min-w-full snap-center px-4">
+            <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <h3 class="text-2xl text-pink-600 font-semibold mb-4">Primer Baile</h3>
+              <div class="text-4xl font-bold text-gray-800 mb-6">9:00 PM</div>
+              <p class="text-gray-600 mb-4"></p>
+              
+            </div>
+          </div>
+        </div>
+  
+        <!-- ... (resto del código del carrusel igual) ... -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- ... (estilos y script anteriores se mantienen igual) ... -->
+  
+  <style>
+    #slides-container {
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    
+    #slides-container::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+  
+    .indicator-dot.active {
+      background-color: #db2777; /* Color pink-600 */
+    }
+  </style>
+  
+  <script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const slidesContainer = document.getElementById('slides-container');
+    const prevButton = document.querySelector('.carousel-prev');
+    const nextButton = document.querySelector('.carousel-next');
+    const dots = document.querySelectorAll('.indicator-dot');
+    let currentIndex = 0;
+  
+    function updateIndicators() {
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+      });
+    }
+  
+    function scrollToSlide(index) {
+      currentIndex = index;
+      slidesContainer.scrollTo({
+        left: slidesContainer.clientWidth * index,
+        behavior: 'smooth'
+      });
+      updateIndicators();
+    }
+  
+    prevButton.addEventListener('click', () => {
+      currentIndex = Math.max(0, currentIndex - 1);
+      scrollToSlide(currentIndex);
+    });
+  
+    nextButton.addEventListener('click', () => {
+      currentIndex = Math.min(2, currentIndex + 1);
+      scrollToSlide(currentIndex);
+    });
+  
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => scrollToSlide(index));
+    });
+  
+    // Actualizar indicadores al hacer scroll manual
+    slidesContainer.addEventListener('scroll', () => {
+      currentIndex = Math.round(slidesContainer.scrollLeft / slidesContainer.clientWidth);
+      updateIndicators();
+    });
+  });
+  </script>

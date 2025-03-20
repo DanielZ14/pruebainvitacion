@@ -1,0 +1,210 @@
+---
+interface Image {
+  src: string;
+  alt: string;
+  caption?: string; // Leyenda opcional
+}
+
+interface Props {
+  columns?: number;
+  gap?: number;
+}
+
+const { columns = 3, gap = 10 } = Astro.props;
+
+const images: Image[] = [];
+for (let i = 1; i <= 14; i++) {
+  images.push({
+    src: `/galeria/${i}.jpeg`,
+    alt: `Imagen ${i}`, // Un alt text genérico (mejóralo si puedes).  ¡IMPORTANTE!
+  });
+}
+---
+
+<div class="gallery-container" style={`--columns: ${columns}; --gap: ${gap}px;`}>
+  {images.map((image) => (
+    <figure class="gallery-item">
+      <img
+        src={image.src}
+        alt={image.alt}
+        loading="lazy"
+        class="gallery-image"
+        data-full-src={image.src}
+      />
+      {/* No mostramos ninguna leyenda en la galería principal */}
+      {image.caption && <figcaption class="gallery-caption">{image.caption}</figcaption>}
+    </figure>
+  ))}
+</div>
+
+<div class="modal" id="imageModal">
+  <span class="close-modal">&times;</span>
+  <div class="modal-content-wrapper">
+    <img class="modal-content" id="modalImage">
+    <div class="modal-caption" id="modalCaption">Silvia & Christian</div> {/* Leyenda FIJA */}
+  </div>
+</div>
+
+<style>
+/* --- Estilos de la galería (sin cambios) --- */
+.gallery-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
+  gap: var(--gap);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--gap);
+  box-sizing: border-box;
+}
+
+.gallery-item {
+  position: relative;
+  margin: 0;
+  break-inside: avoid;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.gallery-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.gallery-item:hover .gallery-image {
+  transform: scale(1.1);
+}
+.gallery-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(0,0,0,0.7);
+    color: #fff;
+    font-size: 0.8em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-sizing: border-box;
+    border-radius: 0 0 8px 8px;
+}
+.gallery-item:hover .gallery-caption{
+    opacity: 1;
+}
+/* --- Estilos del modal (sin cambios) --- */
+.modal {
+  display: none; /* Hide modal by default */
+  position: fixed;
+  z-index: 1000; /* Ensure modal is above other elements */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center images vertically */
+}
+
+/* Nuevo contenedor */
+.modal-content-wrapper {
+  position: relative;
+  margin: auto;
+  padding: 0;
+  width: 80%;
+  max-width: 700px;
+}
+
+.modal-content {
+  max-width: 100%;
+  max-height: 80vh;  /* Deja espacio para la leyenda */
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-caption {
+  display: none; /* Hide the caption */
+}
+
+/* Media query para escritorio */
+@media (min-width: 768px) {
+  .gallery-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas en escritorio */
+  }
+}
+
+/* Media query para dispositivos móviles */
+@media (max-width: 767px) {
+  .modal-content-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+}
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage') as HTMLImageElement;
+    const modalCaption = document.getElementById('modalCaption');
+    const closeModal = document.querySelector('.close-modal');
+    const galleryImages = document.querySelectorAll('.gallery-image');
+
+    if (modal && modalImage && modalCaption && closeModal) {
+      modal.style.display = 'none'; // Ensure modal is hidden on load
+      galleryImages.forEach(image => {
+        image.addEventListener('click', () => {
+          modal.style.display = 'block';
+          modalImage.src = image.getAttribute('data-full-src') || '';
+          modalCaption.textContent = image.getAttribute('alt') || '';
+        });
+      });
+
+      closeModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
+      window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+
+      // Add touch event for mobile devices
+      window.addEventListener('touchstart', (event) => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>

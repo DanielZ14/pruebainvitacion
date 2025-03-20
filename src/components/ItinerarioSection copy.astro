@@ -1,0 +1,137 @@
+---
+const { ceremonia, recepcion } = Astro.props;
+---
+
+<style>
+  .carousel-container {
+    position: relative;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 1rem 0;
+  }
+
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    padding: 0.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  .carousel-arrow.left {
+    left: -1rem;
+  }
+
+  .carousel-arrow.right {
+    right: -1rem;
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .carousel-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 50%;
+    margin: 0 5px;
+    cursor: pointer;
+  }
+</style>
+
+<section class="py-16 px-4 bg-gray-50 relative">
+  <div class="container mx-auto max-w-4xl">
+    <h2 class="text-4xl font-bold text-center mb-12">Itinerario</h2>
+    
+    <div class="carousel-container">
+      <!-- Flechas de navegación -->
+      <div class="carousel-arrow left">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </div>
+      <div class="carousel-arrow right">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Ceremonia -->
+      <div class="inline-block bg-white rounded-lg shadow-lg p-6 mx-2">
+        <div class="text-4xl mb-4 text-center">⛪️</div>
+        <h3 class="text-2xl font-bold mb-4 text-center">Ceremonia Religiosa</h3>
+        <div class="space-y-3">
+          <p class="text-gray-600">
+            <span class="font-semibold">Fecha:</span> {ceremonia.fecha}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Hora:</span> {ceremonia.hora}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Lugar:</span> {ceremonia.lugar}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Dirección:</span> {ceremonia.direccion}
+          </p>
+          {ceremonia.maps && (
+            <a 
+              href={ceremonia.maps}
+              target="_blank"
+              class="inline-flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <span>Ver en Google Maps</span>
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Recepción -->
+      <div class="inline-block bg-white rounded-lg shadow-lg p-6 mx-2">
+        <div class="text-4xl mb-4 text-center">🎉</div>
+        <h3 class="text-2xl font-bold mb-4 text-center">Recepción</h3>
+        <div class="space-y-3">
+          <p class="text-gray-600">
+            <span class="font-semibold">Fecha:</span> {recepcion.fecha}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Hora:</span> {recepcion.hora}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Lugar:</span> {recepcion.lugar}
+          </p>
+          <p class="text-gray-600">
+            <span class="font-semibold">Dirección:</span> {recepcion.direccion}
+          </p>
+          {recepcion.maps && (
+            <a 
+              href={recepcion.maps}
+              target="_blank"
+              class="inline-flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <span>Ver en Google Maps</span>
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- Puntos de navegación -->
+    <div class="carousel-dots">
+      <span class="carousel-dot"></span>
+      <span class="carousel-dot"></span>
+    </div>
+  </div>
+</section> 

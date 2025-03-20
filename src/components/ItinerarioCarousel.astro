@@ -1,137 +1,157 @@
 ---
-// src/components/ItinerarioCarousel.astro
+// Datos de la invitación *directamente* en el componente (sin props)
+const ceremonia = {
+  hora: "17:00 Hrs.",
+  lugar: "Templo de San Agustin",
+  direccion: "Av. Universidad sin número esquina Morelos, Zona Centro",
+  cp: "C.P. 78000",
+  ubicacion: "https://maps.app.goo.gl/d4yEkGTEyjoHqijB7", // URL de Google Maps
+};
+const recepcion = {
+  hora: "7:00 - 8:00 PM",
+  lugar: "Salón Balbeek (Club Libanés Potosino),",
+  direccion: "Av. Cordillera de los Himalaya, 1000 Col. Lomas 4ta. Sección 78216 San Luis Potosí S.L.P",
+  cp: "C.P. 76230",
+  ubicacion: "https://maps.app.goo.gl/G7rfjPek3gYptYKM6", // URL de Google Maps
+};
+
+
+// Helper function to format address
+function formatAddress(direccion: string, cp: string) {
+  return `${direccion}, ${cp}`;
+}
+
 ---
 
-<div class="py-16 px-4 bg-pink-50">
-    <div class="container mx-auto max-w-4xl">
-      <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 font-cursive">
-        Nuestro Itinerario
-      </h2>
-  
-      <!-- Carrusel -->
-      <div class="relative group">
-        <!-- Contenedor de slides -->
-        <div id="slides-container" class="flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
-          <!-- Slide 1 - Ceremonia Religiosa -->
-          <div class="min-w-full snap-center px-4">
-            <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
-              <h3 class="text-2xl text-pink-600 font-semibold mb-4">Ceremonia Religiosa</h3>
-              <div class="flex justify-center mb-4">
-                <img 
-                  src="/Agustin.jpeg" 
-                  alt="Ceremonia"
-                  class="w-32 h-32 rounded-full object-cover border-4 border-pink-100"
-                />
-              </div>
-              <div class="text-4xl font-bold text-gray-800 mb-6">5:00 PM</div>
-              <p class="text-gray-600 mb-4 font-semibold">Templo de San Agustin</p>
-              <p class="text-gray-600 mb-4 font-light">Av. Universidad sin número esquina Morelos, Zona Centro, C.P. 78000</p>
-              <button 
-                onclick="window.open('https://maps.app.goo.gl/NGL51TdinbbegyyL6', '_blank')"
-                class="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition-colors"
-              >
-                Ver Mapa
-              </button>
-            </div>
-          </div>
-  
-          <!-- Slide 2 - Recepción Civil -->
-          <div class="min-w-full snap-center px-4">
-            <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
-              <h3 class="text-2xl text-pink-600 font-semibold mb-4">Recepción & Boda Civil</h3>
-              <div class="flex justify-center mb-4">
-              <img 
-              src="/Libanes.jpg" 
-              alt="Ceremonia"
-              class="w-32 h-32 rounded-full object-cover border-4 border-pink-100"
-            />
-          </div>
-              <div class="text-4xl font-bold text-gray-800 mb-6">7:00 - 8:00 PM</div>
-              <p class="text-gray-600 mb-4 font-semibold">Salón Balbeek (Club Libanés Potosino)</p>
-              <p class="text-gray-600 mb-4 font-light">Av. Cordillera de los Himalaya, 1000 Col. Lomas 4ta. Sección 78216 San Luis Potosí S.L.P.</p>
-              <button 
-                onclick="window.open('https://maps.app.goo.gl/PemXg9mdLZSBxnmE7', '_blank')"
-                class="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition-colors"
-              >
-                Ver Mapa
-              </button>
-            </div>
-          </div>
-  
-          <!-- Slide 3 - Baile -->
-          <div class="min-w-full snap-center px-4">
-            <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
-              <h3 class="text-2xl text-pink-600 font-semibold mb-4">Primer Baile</h3>
-              <div class="text-4xl font-bold text-gray-800 mb-6">9:00 PM</div>
-              <p class="text-gray-600 mb-4"></p>
-              
-            </div>
-          </div>
+<div class="invitacion-container">
+    <div class="seccion ceremonia">
+        <div class="icono-iglesia">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64"><path fill="none" d="M0 0h24v24H0z"/><path d="M21 20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.49a1 1 0 0 1 .386-.79l8-6.222a1 1 0 0 1 1.228 0l8 6.222a1 1 0 0 1 .386.79V20zm-2-1V9.978l-7-5.444-7 5.444V19h14zM11 12h2v4h-2v-4z"/></svg>
         </div>
-  
-        <!-- ... (resto del código del carrusel igual) ... -->
-      </div>
+        <h2>CEREMONIA</h2>
+        <p class="hora">{ceremonia.hora}</p>
+        <p class="lugar">{ceremonia.lugar}</p>
+        <p class="direccion">{formatAddress(ceremonia.direccion, ceremonia.cp)}</p>
+        <a href={ceremonia.ubicacion} target="_blank" rel="noopener noreferrer" class="boton-ubicacion">
+            VER UBICACIÓN
+        </a>
     </div>
-  </div>
-  
-  <!-- ... (estilos y script anteriores se mantienen igual) ... -->
-  
-  <style>
-    #slides-container {
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
-    }
-    
-    #slides-container::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
-    }
-  
-    .indicator-dot.active {
-      background-color: #db2777; /* Color pink-600 */
-    }
-  </style>
-  
-  <script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
-    const slidesContainer = document.getElementById('slides-container');
-    const prevButton = document.querySelector('.carousel-prev');
-    const nextButton = document.querySelector('.carousel-next');
-    const dots = document.querySelectorAll('.indicator-dot');
-    let currentIndex = 0;
-  
-    function updateIndicators() {
-      dots.forEach((dot, index) => {
-        dot.classList.toggle('active', index === currentIndex);
-      });
-    }
-  
-    function scrollToSlide(index) {
-      currentIndex = index;
-      slidesContainer.scrollTo({
-        left: slidesContainer.clientWidth * index,
-        behavior: 'smooth'
-      });
-      updateIndicators();
-    }
-  
-    prevButton.addEventListener('click', () => {
-      currentIndex = Math.max(0, currentIndex - 1);
-      scrollToSlide(currentIndex);
-    });
-  
-    nextButton.addEventListener('click', () => {
-      currentIndex = Math.min(2, currentIndex + 1);
-      scrollToSlide(currentIndex);
-    });
-  
-    dots.forEach((dot, index) => {
-      dot.addEventListener('click', () => scrollToSlide(index));
-    });
-  
-    // Actualizar indicadores al hacer scroll manual
-    slidesContainer.addEventListener('scroll', () => {
-      currentIndex = Math.round(slidesContainer.scrollLeft / slidesContainer.clientWidth);
-      updateIndicators();
-    });
-  });
-  </script>
+
+    <div class="separador"></div>
+
+    <div class="seccion recepcion">
+        <div class="icono-copas">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.385 15.465c.454.781.715 1.656.715 2.579 0 2.28-1.97 4.141-4.4 4.141-2.43 0-4.4-1.861-4.4-4.141 0-.923.26-1.798.714-2.579a6.5 6.5 0 0 0-2.364-3.261C8.891 9.777 8.5 8.275 8.5 6.836 8.5 4.427 10.31 2.5 12.5 2.5c2.19 0 4 1.927 4 4.336 0 1.439-.39 2.94-1.038 4.389a6.501 6.501 0 0 0-2.363 3.261zM17 6.836c0-1.198-.88-2.164-2-2.164-1.12 0-2 .966-2 2.164 0 1.61.65 3.727 2 6.133 1.35-2.406 2-4.523 2-6.133zm-3.436 9.55c1.545 1.124 2.436 2.395 2.436 3.755 0 1.24-.94 2.241-2.1 2.241-1.16 0-2.1-.999-2.1-2.24 0-1.361.891-2.632 2.436-3.755A5.483 5.483 0 0 1 12 14.89a5.483 5.483 0 0 1 1.564 1.496z"/></svg>
+        </div>
+        <h2>RECEPCIÓN</h2>
+        <p class="hora">{recepcion.hora}</p>
+        <p class="lugar">{recepcion.lugar}</p>
+        <p class="direccion">{formatAddress(recepcion.direccion, recepcion.cp)}</p>
+        <a href={recepcion.ubicacion} target="_blank" rel="noopener noreferrer" class="boton-ubicacion">
+            VER UBICACIÓN
+        </a>
+    </div>
+</div>
+
+<style>
+.invitacion-container {
+  display: flex;
+  flex-direction: column; /* Default to column layout for mobile */
+  width: 90%; /* Adjust as needed */
+  max-width: 800px; /* Limit maximum width for larger screens */
+  margin: 20px auto; /* Center the container */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
+  overflow: hidden; /* Ensure content doesn't overflow */
+  background-color: #f9f9f9; /* Optional: Add a background */
+}
+
+.seccion {
+  padding: 20px;
+  text-align: center;
+  flex: 1; /* Ensure sections grow to fill available space */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+}
+
+
+.icono-iglesia, .icono-copas {
+    margin-bottom: 10px; /* Space between icon and title */
+
+}
+/* Style the icons (adjust as needed)*/
+.icono-iglesia svg,
+.icono-copas svg{
+  fill: #777; /* Icon color */
+}
+
+
+
+h2 {
+  font-size: 1.5em; /* Larger font size for titles */
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.hora {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.lugar {
+  font-weight: bold;
+    margin-bottom: 5px;
+
+}
+
+.direccion {
+  font-size: 0.9em;
+  color: #777;
+  margin-bottom: 15px;
+  line-height: 1.4; /* Improve readability of address */
+}
+
+.boton-ubicacion {
+  display: inline-block; /* Allows setting width/height, padding, etc. */
+  padding: 10px 15px;
+  background-color: #d4b06a;  /* Use your brand color */
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;  /* Smooth transition on hover */
+  border: none; /* Remove default button border */
+  cursor: pointer; /* Change cursor on hover */
+  font-size: 1em; /* Or any other desired size */
+
+}
+.boton-ubicacion:hover{
+  background-color: #b89149;
+}
+
+.separador {
+    width: 80%; /* Separator takes full width within its container*/
+    height: 1px; /* Thin line */
+    background-color:  #ccc;
+    margin: 0 auto;
+}
+
+
+/* Media query for larger screens (e.g., tablets, desktops) */
+@media (min-width: 768px) {
+  .invitacion-container {
+    flex-direction: row; /* Switch to horizontal layout */
+    /* Optionally, make sections equal width */
+    /* You could use flex: 1; on .seccion, or give them fixed widths */
+  }
+
+   .separador {
+    width: 1px; /* Separator takes full width within its container*/
+    height: 80%; /* Thin line */
+    background-color:  #ccc;
+    margin: auto 0;
+}
+}
+</style>
