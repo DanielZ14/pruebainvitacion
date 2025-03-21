@@ -1,6 +1,6 @@
 ---
 // src/components/CountdownSection.astro
-const targetDate = new Date('2025-06-28T17:19:00'); // Ajusta la fecha y hora
+// const targetDate = new Date('2025-06-28T17:19:00'); // Ajusta la fecha y hora
 ---
 
 <section class="relative min-h-screen flex items-center justify-center overflow-hidden" style= "clip-path: polygon(49% 0, 51% 0, 100% 7%, 99% 93%, 49% 100%, 48% 100%, 0 91%, 0 9%);">
@@ -18,10 +18,10 @@ const targetDate = new Date('2025-06-28T17:19:00'); // Ajusta la fecha y hora
     <div class="space-y-6">
       <div class="text-xl font-cursive">Solo faltan</div>
       <div class="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
-        <div class="text-5xl font-bold">278</div>
-        <div class="text-5xl font-bold">05</div>
-        <div class="text-5xl font-bold">24</div>
-        <div class="text-5xl font-bold">42</div>
+        <div id="days" class="text-5xl font-bold">278</div>
+        <div id="hours" class="text-5xl font-bold">05</div>
+        <div id="minutes" class="text-5xl font-bold">24</div>
+        <div id="seconds" class="text-5xl font-bold">42</div>
       </div>
       <div class="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
         <div class="text-sm">Días</div>
@@ -63,7 +63,7 @@ const targetDate = new Date('2025-06-28T17:19:00'); // Ajusta la fecha y hora
 <script is:inline>
 // Configurar contador
 document.addEventListener('DOMContentLoaded', () => {
-  const target = new Date('2025-06-28T17:00:00'); // Misma fecha que en Astro
+  const target = new Date('2025-06-28T00:00:00Z'); // Ensure correct target date with UTC
   
   function updateCounter() {
     const now = new Date();
