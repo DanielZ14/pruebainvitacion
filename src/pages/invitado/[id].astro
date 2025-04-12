@@ -96,25 +96,6 @@ const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invi
             ) : (
                 <>
                     <HeroSection invitado={invitado} />
-                    <TextSection />
-                    <CountdownSection />
-                    <ParentsSection />
-                    <section id="ubicacion" >
-                      <ItinerarioCarousel/>
-                    </section>
-                    <section id="vestimenta">
-                      <VestimentaSection />
-                    </section>
-                    
-                    <section id="regalos">
-                      <GiftSection />
-                    </section>
-                    <section >
-                        
-                     <Gallery columns={1} gap={5} /> {/* Personaliza columnas y espacio */}
-                    </section>
-                    
-                    <ContactoSection />
                     <section id="confirmacion">
                      <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
                         <h1 class="text-4xl font-semibold mb-4">¡Ya eres parte de nuestra boda!</h1>
@@ -141,6 +122,24 @@ const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invi
                     <div class="max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12">
                         <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado?.pases || '0', 10)} />
                     </div>
+                    <TextSection />
+                    <CountdownSection />
+                    <ParentsSection />
+                    <section id="ubicacion" >
+                      <ItinerarioCarousel/>
+                    </section>
+                    <section id="vestimenta">
+                      <VestimentaSection />
+                    </section>
+                    
+                    <section id="regalos">
+                      <GiftSection />
+                    </section>
+                    
+                    
+                    <ContactoSection />
+                    
+                    
                   </section>
                     
                     <TextSection />
@@ -152,6 +151,10 @@ const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invi
                             </div>
                         )}
                     </LibroDeDeseos>
+                    <section >
+                        
+                        <Gallery columns={1} gap={5} /> {/* Personaliza columnas y espacio */}
+                       </section>
                 </>
             )}
             <script>

@@ -2,209 +2,256 @@
 interface Image {
   src: string;
   alt: string;
-  caption?: string; // Leyenda opcional
 }
-
-interface Props {
-  columns?: number;
-  gap?: number;
-}
-
-const { columns = 3, gap = 10 } = Astro.props;
 
 const images: Image[] = [];
 for (let i = 1; i <= 14; i++) {
   images.push({
     src: `/galeria/${i}.jpeg`,
-    alt: `Imagen ${i}`, // Un alt text genérico (mejóralo si puedes).  ¡IMPORTANTE!
+    alt: `Imagen ${i}`,
   });
 }
 ---
 
-<div class="gallery-container" style={`--columns: ${columns}; --gap: ${gap}px;`}>
-  {images.map((image) => (
-    <figure class="gallery-item">
-      <img
-        src={image.src}
-        alt={image.alt}
-        loading="lazy"
-        class="gallery-image"
-        data-full-src={image.src}
-      />
-      {/* No mostramos ninguna leyenda en la galería principal */}
-      {image.caption && <figcaption class="gallery-caption">{image.caption}</figcaption>}
-    </figure>
-  ))}
-</div>
-
-<div class="modal" id="imageModal">
-  <span class="close-modal">&times;</span>
-  <div class="modal-content-wrapper">
-    <img class="modal-content" id="modalImage">
-    <div class="modal-caption" id="modalCaption">Silvia & Christian</div> {/* Leyenda FIJA */}
+<div class="carousel-container">
+  <div class="carousel-track">
+    {images.map((image, index) => (
+      <div class="carousel-slide" id={`slide-${index}`}>
+        <img
+          src={image.src}
+          alt={image.alt}
+          loading="lazy"
+          class="carousel-image"
+        />
+      </div>
+    ))}
+  </div>
+  <button class="carousel-button prev" aria-label="Imagen anterior">{'<'}</button>
+  <button class="carousel-button next" aria-label="Siguiente imagen">{'>'}</button>
+  <div class="carousel-dots">
+    {images.map((_, index) => (
+      <button class="carousel-dot" data-slide-index={index} aria-label={`Ir a imagen ${index + 1}`}></button>
+    ))}
   </div>
 </div>
 
 <style>
-/* --- Estilos de la galería (sin cambios) --- */
-.gallery-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
-  gap: var(--gap);
-  width: 100%;
-  margin: 0 auto;
-  padding: var(--gap);
-  box-sizing: border-box;
-}
-
-.gallery-item {
+.carousel-container {
   position: relative;
-  margin: 0;
-  break-inside: avoid;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.gallery-image {
-  display: block;
   width: 100%;
-  height: auto;
-  object-fit: cover;
-  object-position: center;
-  transition: transform 0.3s ease;
-  cursor: pointer;
-  border-radius: 8px;
+  max-width: 800px; /* Adjust as needed */
+  margin: 2rem auto;
+  overflow: hidden; /* Hide overflowing slides */
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.gallery-item:hover .gallery-image {
-  transform: scale(1.1);
+.carousel-track {
+  display: flex;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory; /* Enable snapping */
+  scroll-behavior: smooth; /* Smooth scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scrollbar-width: none; /* Hide scrollbar (Firefox) */
+  -ms-overflow-style: none;  /* Hide scrollbar (IE/Edge) */
 }
-.gallery-caption {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 10px;
-    background-color: rgba(0,0,0,0.7);
-    color: #fff;
-    font-size: 0.8em;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    box-sizing: border-box;
-    border-radius: 0 0 8px 8px;
+.carousel-track::-webkit-scrollbar {
+  display: none; /* Hide scrollbar (Chrome, Safari, Opera) */
 }
-.gallery-item:hover .gallery-caption{
-    opacity: 1;
+
+.carousel-slide {
+  flex: 0 0 100%; /* Each slide takes full width */
+  scroll-snap-align: center; /* Snap slides to the center */
+  position: relative;
+  aspect-ratio: 16 / 10; /* Maintain aspect ratio */
 }
-/* --- Estilos del modal (sin cambios) --- */
-.modal {
-  display: none; /* Hide modal by default */
-  position: fixed;
-  z-index: 1000; /* Ensure modal is above other elements */
-  left: 0;
-  top: 0;
+
+.carousel-image {
+  display: block;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center; /* Center images vertically */
+  object-fit: cover;
+  object-position: center;
 }
 
-/* Nuevo contenedor */
-.modal-content-wrapper {
-  position: relative;
-  margin: auto;
-  padding: 0;
-  width: 80%;
-  max-width: 700px;
-}
-
-.modal-content {
-  max-width: 100%;
-  max-height: 80vh;  /* Deja espacio para la leyenda */
-  object-fit: contain;
-  display: block;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.close-modal {
+.carousel-button {
   position: absolute;
-  top: 15px;
-  right: 35px;
-  color: #fff;
-  font-size: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
   font-weight: bold;
-  transition: 0.3s;
+  color: #333;
   cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+.carousel-button:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+.carousel-button.prev {
+  left: 10px;
+}
+.carousel-button.next {
+  right: 10px;
 }
 
-.close-modal:hover,
-.close-modal:focus {
-  color: #bbb;
-  text-decoration: none;
+.carousel-dots {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: none;
+  padding: 0;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-
-.modal-caption {
-  display: none; /* Hide the caption */
-}
-
-/* Media query para escritorio */
-@media (min-width: 768px) {
-  .gallery-container {
-    grid-template-columns: repeat(3, 1fr); /* 3 columnas en escritorio */
-  }
-}
-
-/* Media query para dispositivos móviles */
-@media (max-width: 767px) {
-  .modal-content-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-  }
+.carousel-dot.active {
+  background-color: rgba(255, 255, 255, 0.9);
 }
 </style>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modalImage') as HTMLImageElement;
-    const modalCaption = document.getElementById('modalCaption');
-    const closeModal = document.querySelector('.close-modal');
-    const galleryImages = document.querySelectorAll('.gallery-image');
+<script is:inline>
+// Wrap setup in setTimeout to ensure DOM is fully ready
+setTimeout(() => {
+  const container = document.querySelector('.carousel-container');
+  if (!container) return; // Exit if container not found
 
-    if (modal && modalImage && modalCaption && closeModal) {
-      modal.style.display = 'none'; // Ensure modal is hidden on load
-      galleryImages.forEach(image => {
-        image.addEventListener('click', () => {
-          modal.style.display = 'block';
-          modalImage.src = image.getAttribute('data-full-src') || '';
-          modalCaption.textContent = image.getAttribute('alt') || '';
-        });
-      });
+  const track = container.querySelector('.carousel-track');
+  const slides = Array.from(track?.children || []);
+  const nextButton = container.querySelector('.carousel-button.next');
+  const prevButton = container.querySelector('.carousel-button.prev');
+  const dotsNav = container.querySelector('.carousel-dots');
+  const dots = Array.from(dotsNav.children);
 
-      closeModal.addEventListener('click', () => {
-        modal.style.display = 'none';
-      });
+  // Calculate slideWidth dynamically inside moveToSlide
+  let currentSlideIndex = 0;
+  let autoplayInterval = null;
+  const AUTOPLAY_DELAY = 5000; // 5 seconds
 
-      window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-          modal.style.display = 'none';
-        }
-      });
+  // Function to move to a specific slide
+  const moveToSlide = (targetIndex) => {
+    const slideWidth = slides[0].getBoundingClientRect().width; // Calculate width here
+    if (slideWidth === 0) return; // Avoid division by zero or incorrect scroll if width is 0
 
-      // Add touch event for mobile devices
-      window.addEventListener('touchstart', (event) => {
-        if (event.target === modal) {
-          modal.style.display = 'none';
-        }
-      });
+    // Handle looping
+    if (targetIndex < 0) {
+      targetIndex = slides.length - 1;
+    } else if (targetIndex >= slides.length) {
+      targetIndex = 0;
     }
+
+    const newScrollLeft = targetIndex * slideWidth;
+
+    track.scrollTo({
+      left: newScrollLeft,
+      behavior: 'smooth'
+    });
+    currentSlideIndex = targetIndex;
+    updateDots();
+  };
+
+  // Update dots indicator
+  const updateDots = () => {
+    dots.forEach(dot => dot.classList.remove('active'));
+    if (dots[currentSlideIndex]) {
+      dots[currentSlideIndex].classList.add('active');
+    }
+  };
+
+  // Start autoplay
+  const startAutoplay = () => {
+    stopAutoplay(); // Clear existing interval first
+    autoplayInterval = setInterval(() => {
+      moveToSlide(currentSlideIndex + 1);
+    }, AUTOPLAY_DELAY);
+  };
+
+  // Stop autoplay
+  const stopAutoplay = () => {
+    clearInterval(autoplayInterval);
+  };
+
+  // Button event listeners
+  nextButton.addEventListener('click', () => {
+    moveToSlide(currentSlideIndex + 1);
+    stopAutoplay(); // Stop autoplay on manual interaction
+    startAutoplay(); // Restart autoplay timer
   });
+
+  prevButton.addEventListener('click', () => {
+    moveToSlide(currentSlideIndex - 1);
+    stopAutoplay();
+    startAutoplay();
+  });
+
+  // Dots event listeners
+  dotsNav.addEventListener('click', e => {
+    const targetDot = e.target.closest('button');
+    if (!targetDot) return;
+
+    const targetIndex = dots.findIndex(dot => dot === targetDot);
+    moveToSlide(targetIndex);
+    stopAutoplay();
+    startAutoplay();
+  });
+
+  // Update dots on scroll (for manual scroll snapping)
+  // Debounce function to limit scroll event handler frequency
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  const handleScroll = debounce(() => {
+      const currentSlideWidth = slides[0].getBoundingClientRect().width; // Use current width for calculation
+      if (currentSlideWidth === 0) return;
+      const scrollLeft = track.scrollLeft;
+      // Find the index of the slide closest to the center
+      currentSlideIndex = Math.round(scrollLeft / currentSlideWidth);
+      updateDots();
+  }, 150); // Adjust debounce time as needed
+
+  track.addEventListener('scroll', handleScroll);
+
+
+  // Initialize
+  updateDots();
+  startAutoplay();
+
+  // Optional: Pause autoplay on hover
+  container.addEventListener('mouseenter', stopAutoplay);
+  container.addEventListener('mouseleave', startAutoplay);
+
+  // Recalculate scroll position on resize
+   window.addEventListener('resize', debounce(() => {
+      const newSlideWidth = slides[0].getBoundingClientRect().width;
+      if (newSlideWidth > 0) {
+        // Recalculate scroll position based on the current slide index and new width
+        track.scrollTo({ left: currentSlideIndex * newSlideWidth, behavior: 'auto' });
+      }
+  }, 250));
+
+
 </script>
