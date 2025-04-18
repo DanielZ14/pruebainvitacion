@@ -26,8 +26,6 @@ for (let i = 1; i <= 14; i++) {
       </div>
     ))}
   </div>
-  <button class="carousel-button prev" aria-label="Imagen anterior">{'<'}</button>
-  <button class="carousel-button next" aria-label="Siguiente imagen">{'>'}</button>
   <div class="carousel-dots">
     {images.map((_, index) => (
       <button class="carousel-dot" data-slide-index={index} aria-label={`Ir a imagen ${index + 1}`}></button>

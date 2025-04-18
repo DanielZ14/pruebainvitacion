@@ -11,7 +11,7 @@
   ></div>
   
   <!-- Overlay oscuro -->
-  <div class="absolute inset-0 bg-black/40 z-20"></div>
+  <div class="absolute inset-0 bg-black/10 z-20"></div>
 
   <!-- Contenido -->
   <div class="relative z-30 text-center text-white px-4">
@@ -99,11 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function addToCalendar() {
-  const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Boda de Silvia y Christian\nDTSTART:20250628T170000Z\nDTEND:20250628T230000Z\nLOCATION:Ubicación de la boda\nDESCRIPTION:¡No te pierdas nuestra boda!\nEND:VEVENT\nEND:VCALENDAR`;
+  const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:Boda de Daniela & Antonio
+DTSTART:20240720T220000Z
+DTEND:20240721T040000Z
+LOCATION:Salón Balbeek (Club Libanés Potosino), Av. Cordillera de los Himalaya, 1000 Col. Lomas 4ta. Sección 78216 San Luis Potosí S.L.P
+DESCRIPTION:Ceremonia Religiosa: 5:00 PM - Templo de San Agustin\\nRecepción: 7:00 PM - Salón Balbeek (Club Libanés Potosino)
+END:VEVENT
+END:VCALENDAR`;
+  
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'boda.ics';
+  link.download = 'Boda_Daniela_y_Antonio.ics';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

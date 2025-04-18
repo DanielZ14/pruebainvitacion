@@ -1,34 +1,218 @@
 ---
+// src/pages/invitado/[id].astro
+export const prerender = false;
+import SplashScreen from '../components/SplashScreen.astro';
+import { db } from '../lib/firebase';
+import { doc, getDoc } from "firebase/firestore";
+import ConfirmacionAsistencia from '../components/ConfirmacionAsistencia.astro';
+import DescargaPases from '../components/DescargaPases.astro';
+import HeroSection from "../components/HeroSection.astro";
+import TextSection from "../components/TextSection.astro";
 import Layout from '../layouts/Layout.astro';
-import Splash from '../components/Splash.astro';
+import Navbar from '../components/Navbar.astro';
+import CountdownSection from '../components/CountdownSection.astro';
+import ItinerarioCarousel from '../components/ItinerarioCarousel.astro';
+import VestimentaSection from '../components/VestimentaSection.astro';
+import ParentsSection from '../components/ParentsSection.astro';
+import GiftSection from '../components/GiftSection.astro';
+import LibroDeDeseos from '../components/LibroDeDeseos.astro';
+import ContactoSection from '../components/ContactoSection.astro';
+import MostrarPases from "../components/MostrarPases.astro";
+import Gallery from '../components/Gallery.astro';
+interface Invitado {
+    id: string;
+    nombre: string;
+    pases: string;
+    mesa: string;
+}
 
-// Estos datos podrían venir de una base de datos o CMS
-const bodaData = {
-  nombreNovia: "Daniela",
-  nombreNovio: "Antonio",
-  fecha: "20 de Julio de 2024",
-  padresNovia: {
-    madre: "María González",
-    padre: "José Pérez"
-  },
-  padresNovio: {
-    madre: "Ana López",
-    padre: "Juan Rodríguez"
-  }
-};
+// Estado de carga y manejo de errores
+let invitado: Invitado | null = null;
+let loading = true;
+let error = false;
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const { id } = Astro.params;
+
+if (id) {
+    try {
+        const docRef = doc(db, "invitados", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            invitado = {
+                id: docSnap.id,
+                nombre: data.nombre,
+                pases: data.pases,
+                mesa: data.mesa,
+            };
+        } else {
+            console.log("No such document!");
+            error = true;
+        }
+    } catch (err) {
+        console.error("Error loading guest data:", err);
+        error = true;
+    } finally {
+        loading = false;
+    }
+}
+
+let yaConfirmo = false;
+let asistenciaPrevia = null;
+
+if (id) {
+    try {
+        const docRef = doc(db, "confirmaciones", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            yaConfirmo = true;
+            asistenciaPrevia = docSnap.data().asistencia;
+        }
+    } catch (error) {
+        console.error("Error al obtener confirmación:", error);
+    }
+}
+
+const pageTitle = invitado?.nombre ? `Invitación de ${invitado.nombre}` : 'Invitación a nuestra boda';
 ---
 
-<Layout title="Daniela & Antonio - Nuestra Boda">
-  <Splash 
-    nombreNovia={bodaData.nombreNovia}
-    nombreNovio={bodaData.nombreNovio}
-    fecha={bodaData.fecha}
-    padresNovia={bodaData.padresNovia}
-    padresNovio={bodaData.padresNovio}
-  />
-  
-  <!-- Aquí puedes agregar más secciones de la invitación -->
+<Layout title={pageTitle}>
+    <SplashScreen>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8" />
+        </head>
+        <body>
+            <audio id="background-audio" src="/audio/audio.mp3" loop></audio>
+            <Navbar />
+            <button id="play-audio" class="hidden">Play Audio</button>
+            <button id="toggle-audio" class="fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg">Pause</button>
+            {loading ? (
+                <p>Cargando...</p>
+            ) : error ? (
+                <p>Invitado no encontrado.</p>
+            ) : (
+                <>
+                    <HeroSection invitado={invitado} />
+                    <section id="confirmacion">
+                     <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
+                        <h1 class="text-4xl font-semibold mb-4">¡Ya eres parte de nuestra boda!</h1>
+                        {invitado && (
+                            <div class="mb-4">
+                                <p>Nombre: {invitado.nombre}</p>
+                                <p>Pases: {invitado.pases}</p>
+                            </div>
+                        )}
+                         <div class="font-semibold">
+                            {yaConfirmo ? (
+                                <p>
+                                    Ya confirmaste tu asistencia. {asistenciaPrevia ? '¡Nos vemos en la boda!' : '¡Lamentamos que no puedas asistir!'}
+                                </p>
+                            ) : (
+                                invitado && id && <ConfirmacionAsistencia
+                                    idInvitado={id}
+                                    nombreInvitado={invitado.nombre}
+                                    pasesDisponibles={parseInt(invitado.pases, 10)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div class="max-w-md mx-auto py-4 p-6 bg-white rounded-lg shadow-md text-center mt-12">
+                        <MostrarPases idInvitado={id || ''} pasesDisponibles={parseInt(invitado?.pases || '0', 10)} />
+                    </div>
+                    <TextSection />
+                    <CountdownSection />
+                    <ParentsSection />
+                    <section id="ubicacion" >
+                      <ItinerarioCarousel/>
+                    </section>
+                    <section id="vestimenta">
+                      <VestimentaSection />
+                    </section>
+                    
+                    <section id="regalos">
+                      <GiftSection />
+                    </section>
+                    
+                    
+                    <ContactoSection />
+                    
+                    
+                  </section>
+                    
+                    <TextSection />
+
+                    <LibroDeDeseos idInvitado={id || ''} nombreInvitado={invitado?.nombre || ''}>
+                        {invitado && (
+                            <div class="avatar bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
+                                {invitado.nombre.split(' ').map(n => n[0]).join('')}
+                            </div>
+                        )}
+                    </LibroDeDeseos>
+                    <section >
+                        
+                        <Gallery columns={1} gap={5} /> {/* Personaliza columnas y espacio */}
+                       </section>
+                </>
+            )}
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const audio = document.getElementById('background-audio') as HTMLAudioElement;
+                    const playButton = document.getElementById('play-audio');
+                    const toggleButton = document.getElementById('toggle-audio');
+
+                    function playAudio() {
+                        audio.play();
+                    }
+
+                    function toggleAudio() {
+                        if (audio.paused) {
+                            audio.play();
+                            toggleButton.textContent = 'Pause';
+                        } else {
+                            audio.pause();
+                            toggleButton.textContent = 'Play';
+                        }
+                    }
+
+                    playButton?.addEventListener('click', playAudio);
+                    toggleButton?.addEventListener('click', toggleAudio);
+
+                    // Wait for splash to disappear
+                    setTimeout(() => {
+                        audio.play().catch(() => {
+                            // If autoplay fails, show play button
+                            playButton?.classList.remove('hidden');
+                        });
+                    }, 3000); // Adjust time as needed
+                });
+            </script>
+        </body>
+    </html>
+</SplashScreen>
 </Layout>
+
+<style>
+  main {
+    width: 100%;
+  }
+
+  .section-container {
+    max-width: 800px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .section-container {
+      margin: 2rem auto;
+    }
+  }
+
+  #toggle-audio {
+    background-color: rgba(128, 128, 128, 0.7); /* Gray translucent */
+    z-index: 1000; /* Ensure it is on top */
+  }
+</style>
